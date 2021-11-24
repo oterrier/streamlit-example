@@ -9,7 +9,8 @@ from visualizer import visualize
 models = ["en_core_web_sm", "en_core_web_md"]
 default_text = "Sundar Pichai is the CEO of Google."
 # Reads
-st.write(st.session_state.token)
+if 'token' in st.session_state:
+    st.write(st.session_state.token)
 visualize(models, default_text,
           sidebar_title="Sherpa demo",
           sidebar_description="Customizable Sherpa demonstration",
