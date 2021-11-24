@@ -5,10 +5,12 @@ from spacy.language import Language
 from spacy import displacy
 import pandas as pd
 
-from .util import load_model, process_text, get_svg, get_html, LOGO
+# from .util import load_model, process_text, get_svg, get_html, LOGO
 
 
 # fmt: off
+from util import LOGO, load_model, process_text, get_svg, get_html
+
 NER_ATTRS = ["text", "label_", "start", "end", "start_char", "end_char"]
 TOKEN_ATTRS = ["idx", "text", "lemma_", "pos_", "tag_", "dep_", "head", "morph",
                "ent_type_", "ent_iob_", "shape_", "is_alpha", "is_ascii",
