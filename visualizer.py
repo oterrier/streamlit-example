@@ -29,11 +29,9 @@ def visualize(
     ner_attrs: List[str] = NER_ATTRS,
     similarity_texts: Tuple[str, str] = ("apple", "orange"),
     token_attrs: List[str] = TOKEN_ATTRS,
-    show_json_doc: bool = True,
-    show_meta: bool = True,
-    show_config: bool = True,
+    show_project: bool = True,
+    show_plan: bool = True,
     show_visualizer_select: bool = False,
-    show_pipeline_info: bool = True,
     sidebar_title: Optional[str] = None,
     sidebar_description: Optional[str] = None,
     show_logo: bool = True,
@@ -95,10 +93,13 @@ def visualize(
 
     text = st.text_area("Text to analyze", default_text, key=f"{key}_visualize_text")
 
-    if show_config:
+    if show_project:
         if project is not None:
             project_exp = st.expander("Project meta.json")
             project_exp.json(get_project(url_input, st.session_state.project, st.session_state.token))
+
+
+    if show_plan:
         if plan is not None:
             plan_exp = st.expander("Plan meta.json")
             plan_exp.json(get_plan(url_input, st.session_state.project, st.session_state.plan, st.session_state.token))
