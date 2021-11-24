@@ -1,18 +1,15 @@
 import json
 from pathlib import Path
-from typing import List, Sequence, Tuple, Optional, Dict, Union, Callable
+from typing import List, Tuple, Optional, Dict, Callable
 
 import pandas as pd
 import plac
-import spacy
 import streamlit as st
 from annotated_text import annotated_text
 from collections_extended import RangeMap
-from spacy import displacy
-from spacy.language import Language
 
 # fmt: off
-from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
+from util import LOGO, get_svg, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
     get_project, get_plan, annotate_with_plan
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
@@ -42,7 +39,7 @@ def visualize(
         show_logo: bool = True,
         color: Optional[str] = "#09A3D5",
         key: Optional[str] = None,
-        get_default_text: Callable[[Language], str] = None,
+        get_default_text: str = None,
 ) -> None:
     """Embed the full visualizer with selected components."""
 
@@ -105,39 +102,6 @@ def visualize(
         unsafe_allow_html=True,
     )
 
-
-def visualize_parser(
-        doc: spacy.tokens.Doc,
-        *,
-        title: Optional[str] = "Dependency Parse & Part-of-speech tags",
-        key: Optional[str] = None,
-) -> None:
-    """Visualizer for dependency parses."""
-    if title:
-        st.header(title)
-    cols = st.columns(4)
-    split_sents = cols[0].checkbox(
-        "Split sentences", value=True, key=f"{key}_parser_split_sents"
-    )
-    options = {
-        "collapse_punct": cols[1].checkbox(
-            "Collapse punct", value=True, key=f"{key}_parser_collapse_punct"
-        ),
-        "collapse_phrases": cols[2].checkbox(
-            "Collapse phrases", key=f"{key}_parser_collapse_phrases"
-        ),
-        "compact": cols[3].checkbox("Compact mode", key=f"{key}_parser_compact"),
-    }
-    docs = [span.as_doc() for span in doc.sents] if split_sents else [doc]
-    for sent in docs:
-        html = displacy.render(sent, options=options, style="dep")
-        # Double newlines seem to mess with the rendering
-        html = html.replace("\n\n", "\n")
-        if split_sents and len(docs) > 1:
-            st.markdown(f"> {sent.text}")
-        st.write(get_svg(html), unsafe_allow_html=True)
-
-
 def visualize_ner(
         doc,
         *,
@@ -198,63 +162,6 @@ def visualize_textcat(
     st.markdown(f"> {doc['text']}")
     cats = {c['label']:c.get('score', 1.0) for c in doc['categories']}
     df = pd.DataFrame(cats.items(), columns=("Label", "Score"))
-    st.dataframe(df)
-
-
-def visualize_similarity(
-        nlp: spacy.language.Language,
-        default_texts: Tuple[str, str] = ("apple", "orange"),
-        *,
-        threshold: float = 0.5,
-        title: Optional[str] = "Vectors & Similarity",
-        key: Optional[str] = None,
-) -> None:
-    """Visualizer for semantic similarity using word vectors."""
-    meta = nlp.meta.get("vectors", {})
-    if title:
-        st.header(title)
-    if not meta.get("width", 0):
-        st.warning("No vectors available in the model.")
-    else:
-        cols = st.columns(2)
-        text1 = cols[0].text_input(
-            "Text or word 1", default_texts[0], key=f"{key}_similarity_text1"
-        )
-        text2 = cols[1].text_input(
-            "Text or word 2", default_texts[1], key=f"{key}_similarity_text2"
-        )
-        doc1 = nlp.make_doc(text1)
-        doc2 = nlp.make_doc(text2)
-        similarity = doc1.similarity(doc2)
-        similarity_text = f"**Score:** `{similarity}`"
-        if similarity > threshold:
-            st.success(similarity_text)
-        else:
-            st.error(similarity_text)
-
-        exp = st.expander("Vector information")
-        exp.code(meta)
-
-
-def visualize_tokens(
-        doc: spacy.tokens.Doc,
-        *,
-        attrs: List[str] = TOKEN_ATTRS,
-        title: Optional[str] = "Token attributes",
-        key: Optional[str] = None,
-) -> None:
-    """Visualizer for token attributes."""
-    if title:
-        st.header(title)
-    exp = st.expander("Select token attributes")
-    selected = exp.multiselect(
-        "Token attributes",
-        options=attrs,
-        default=list(attrs),
-        key=f"{key}_tokens_attr_select",
-    )
-    data = [[str(getattr(token, attr)) for attr in selected] for token in doc]
-    df = pd.DataFrame(data, columns=selected)
     st.dataframe(df)
 
 def main():
