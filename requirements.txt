@@ -3,5 +3,5 @@ streamlit~=1.2.0
 st-annotated-text
 requests~=2.25.1
 spacy~=3.0.6
-collection-extended
-plac
+plac==0.9.6
+collections-extended>=1.0.2
