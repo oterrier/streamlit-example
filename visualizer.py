@@ -1,18 +1,17 @@
 import html
 import json
 from pathlib import Path
-from typing import List, Tuple, Optional, Dict, Callable
+from typing import List, Tuple, Optional, Dict
 
 import pandas as pd
 import plac
 import streamlit as st
 from annotated_text import div, annotation
 from collections_extended import RangeMap
-
 # fmt: off
 from htbuilder import HtmlElement
 
-from util import LOGO, get_svg, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
+from util import LOGO, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
     get_project, get_plan, annotate_with_plan
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
@@ -86,7 +85,6 @@ def visualize(
             if st.session_state.get('plan', None) is not None:
                 plan = get_plan_by_label(url, project, st.session_state.plan, st.session_state.token)
 
-    st.text_area("Text to analyze", default_text, key="visualize_text")
     if project is not None:
         if show_project:
             project_exp = st.expander("Project definition (json)")
@@ -96,11 +94,13 @@ def visualize(
             if show_plan:
                 plan_exp = st.expander("Plan definition (json)")
                 plan_exp.json(pipe)
-            doc = annotate_with_plan(url, project, plan, st.session_state.visualize_text, st.session_state.token)
-            doc_exp = st.expander("Annotated doc (json)")
-            doc_exp.json(doc)
-            visualize_textcat(doc)
-            visualize_ner(doc)
+    st.text_area("Text to analyze", default_text, key="visualize_text")
+    if project is not None and plan is not None:
+        doc = annotate_with_plan(url, project, plan, st.session_state.visualize_text, st.session_state.token)
+        doc_exp = st.expander("Annotated doc (json)")
+        doc_exp.json(doc)
+        visualize_textcat(doc)
+        visualize_ner(doc)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
