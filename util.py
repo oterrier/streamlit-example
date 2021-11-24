@@ -1,7 +1,28 @@
+import json
+
+import requests
 import streamlit as st
 import spacy
 import base64
 
+
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def get_token(server: str, user: str, password: str):
+    url = f"{server}/api/auth/login"
+    auth = {"email": user, "password": password}
+    try:
+        response = requests.post(url, json=auth,
+                                 headers={'Content-Type': "application/json", 'Accept': "application/json"},
+                                 verify=False)
+        json_response = json.loads(response.text)
+    except Exception as ex:
+        print("Error connecting to Sherpa server %s: %s" % (server, ex))
+        return
+    if 'access_token' in json_response:
+        token = json_response['access_token']
+        return token
+    else:
+        return
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_model(name: str) -> spacy.language.Language:

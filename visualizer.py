@@ -9,7 +9,7 @@ import pandas as pd
 
 
 # fmt: off
-from util import LOGO, load_model, process_text, get_svg, get_html
+from util import LOGO, load_model, process_text, get_svg, get_html, get_token
 
 NER_ATTRS = ["text", "label_", "start", "end", "start_char", "end_char"]
 TOKEN_ATTRS = ["idx", "text", "lemma_", "pos_", "tag_", "dep_", "head", "morph",
@@ -58,9 +58,12 @@ def visualize(
 
     with st.sidebar.form(key='connect_form'):
         url_input = st.text_input(label='Sherpa URL', value="https://sherpa-sandbox.kairntech.com/")
-        name_input = st.text_input(label='Name')
-        pwd_input = st.text_input(label='Password', type="password")
+        name_input = st.text_input(label='Name', value=st.secrets.sherpa_credentials.username)
+        pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.password, type="password")
         submit_button = st.form_submit_button(label='Connect')
+        if submit_button:
+            if 'token' not in st.session_state:
+                st.session_state['token'] = get_token(url_input, name_input, pwd_input)
 
     # Allow both dict of model name / description as well as list of names
     model_names = plans
