@@ -217,7 +217,7 @@ def annotated_text(*args):
     ... )
 
     """
-    out = div(style="overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 0.25rem; padding: 1rem; margin-bottom: 2.5rem")
+    out = div(style="white-space: pre; overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 0.25rem; padding: 1rem; margin-bottom: 2.5rem")
 
     for arg in args:
         if isinstance(arg, str):
