@@ -1,8 +1,13 @@
+import json
+from pathlib import Path
 from typing import List, Sequence, Tuple, Optional, Dict, Union, Callable
 
 import pandas as pd
+import plac
 import spacy
 import streamlit as st
+from annotated_text import annotated_text
+from collections_extended import RangeMap
 from spacy import displacy
 from spacy.language import Language
 
@@ -134,53 +139,54 @@ def visualize_parser(
 
 
 def visualize_ner(
-        doc: Union[spacy.tokens.Doc, List[Dict[str, str]]],
+        doc,
         *,
-        labels: Sequence[str] = tuple(),
-        attrs: List[str] = NER_ATTRS,
         show_table: bool = True,
         title: Optional[str] = "Named Entities",
         colors: Dict[str, str] = {},
-        key: Optional[str] = None,
-        manual: Optional[bool] = False,
+        key: Optional[str] = None
 ) -> None:
     """Visualizer for named entities."""
     if title:
         st.header(title)
-
-    if manual:
-        if show_table:
-            st.warning("When the parameter 'manual' is set to True, the parameter 'show_table' must be set to False.")
-        if not isinstance(doc, list):
-            st.warning(
-                "When the parameter 'manual' is set to True, the parameter 'doc' must be of type 'list', not 'spacy.tokens.Doc'.")
+    labels = {}
+    annotation_map = RangeMap()
+    annotations = doc.get('annotations', [])
+    text = doc['text']
+    if annotations:
+        for a in annotations:
+            labels[a['labelName']] = a['label']
+            annotation_map[a['start']:a['end']] = a['labelName']
+        start = 0
+        annotated = []
+        for r in annotation_map.ranges():
+            if r.start > start:
+                annotated.append(text[start:r.start])
+            annotated.append((text[r.start:r.stop], r.value))
+            start = r.stop
     else:
-        labels = labels or [ent.label_ for ent in doc.ents]
-
+        annotated = [text]
     if not labels:
         st.warning("The parameter 'labels' should not be empty or None.")
     else:
-        exp = st.expander("Select entity labels")
+        exp = st.expander("Select annotation labels")
         label_select = exp.multiselect(
             "Entity labels",
-            options=labels,
-            default=list(labels),
+            options=labels.values(),
+            default=list(labels.values()),
             key=f"{key}_ner_label_select",
         )
-        html = displacy.render(
-            doc, style="ent", options={"ents": label_select, "colors": colors}, manual=manual
-        )
-        style = "<style>mark.entity { display: inline-block }</style>"
-        st.write(f"{style}{get_html(html)}", unsafe_allow_html=True)
-        if show_table:
-            data = [
-                [str(getattr(ent, attr)) for attr in attrs]
-                for ent in doc.ents
-                if ent.label_ in label_select
-            ]
-            if data:
-                df = pd.DataFrame(data, columns=attrs)
-                st.dataframe(df)
+        annotated_text(*annotated)
+        #
+        # if show_table:
+        #     data = [
+        #         [str(getattr(ent, attr)) for attr in attrs]
+        #         for ent in doc.ents
+        #         if ent.label_ in label_select
+        #     ]
+        #     if data:
+        #         df = pd.DataFrame(data, columns=attrs)
+        #         st.dataframe(df)
 
 
 def visualize_textcat(
@@ -250,3 +256,14 @@ def visualize_tokens(
     data = [[str(getattr(token, attr)) for attr in selected] for token in doc]
     df = pd.DataFrame(data, columns=selected)
     st.dataframe(df)
+
+def main():
+    testdir = Path(__file__).parent
+    source = Path(testdir, 'slots.json')
+    with source.open("r") as fin:
+        docs = json.load(fin)
+    visualize_ner(docs[0])
+
+
+if __name__ == "__main__":
+    plac.call(main)
