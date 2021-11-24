@@ -66,31 +66,32 @@ def visualize(
 
     plan = None
     project = None
+    url = url_input[0:-1] if url_input.endswith('/') else url_input
     if 'token' in st.session_state:
-        all_projects = get_projects(url_input, st.session_state.token)
+        all_projects = get_projects(url, st.session_state.token)
         selected_projects = [p['label'] for p in all_projects if projects is None or p['name'] in projects]
         st.sidebar.selectbox('Select project', selected_projects, key="project")
         if st.session_state.get('project', None) is not None:
-            project = get_project_by_label(url_input, st.session_state.project, st.session_state.token)
-            all_plans = get_plans(url_input,
+            project = get_project_by_label(url, st.session_state.project, st.session_state.token)
+            all_plans = get_plans(url,
                               project,
                               st.session_state.token) if project is not None else []
             selected_plans = [p['label'] for p in all_plans if plans is None or p['name'] in plans]
             st.sidebar.selectbox('Select plan', selected_plans, key="plan")
             if st.session_state.get('plan', None) is not None:
-                plan = get_plan_by_label(url_input, project, st.session_state.plan, st.session_state.token)
+                plan = get_plan_by_label(url, project, st.session_state.plan, st.session_state.token)
 
     text = st.text_area("Text to analyze", default_text, key=f"{key}_visualize_text")
     if project is not None:
         if show_project:
             project_exp = st.expander("Project definition (json)")
-            project_exp.json(get_project(url_input, project, st.session_state.token))
+            project_exp.json(get_project(url, project, st.session_state.token))
         if plan is not None:
-            pipe = get_plan(url_input, project, plan, st.session_state.token)
+            pipe = get_plan(url, project, plan, st.session_state.token)
             if show_plan:
                 plan_exp = st.expander("Plan definition (json)")
                 plan_exp.json(pipe)
-            doc = annotate_with_plan(url_input, project, plan, text, st.session_state.token)
+            doc = annotate_with_plan(url, project, plan, text, st.session_state.token)
             doc_exp = st.expander("Annotated doc (json)")
             doc_exp.json(doc)
 

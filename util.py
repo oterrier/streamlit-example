@@ -93,8 +93,8 @@ def annotate_with_plan(server: str, project: str, plan: str, text: str, token: s
     st.write("annotate_with_plan(", server, ", ", project, ", ", plan, ")")
     url = f"{server}/api/projects/{project}/annotators/{plan}/_annotate"
     st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), url=", url)
-    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "text/plain"}
-    r = requests.post(url, data=text, headers=headers, verify=False, timeout=1000)
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "text/plain", 'Accept': "application/json"}
+    r = requests.post(url, data=text.encode(encoding="utf-8"), headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
         st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), doc=", str(doc))
