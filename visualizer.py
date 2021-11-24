@@ -86,7 +86,7 @@ def visualize(
             if st.session_state.get('plan', None) is not None:
                 plan = get_plan_by_label(url, project, st.session_state.plan, st.session_state.token)
 
-    text = st.text_area("Text to analyze", default_text, key=f"{key}_visualize_text")
+    st.text_area("Text to analyze", default_text, key="visualize_text")
     if project is not None:
         if show_project:
             project_exp = st.expander("Project definition (json)")
@@ -96,7 +96,7 @@ def visualize(
             if show_plan:
                 plan_exp = st.expander("Plan definition (json)")
                 plan_exp.json(pipe)
-            doc = annotate_with_plan(url, project, plan, text, st.session_state.token)
+            doc = annotate_with_plan(url, project, plan, st.session_state.visualize_text, st.session_state.token)
             doc_exp = st.expander("Annotated doc (json)")
             doc_exp.json(doc)
             visualize_textcat(doc)
@@ -148,8 +148,7 @@ def visualize_ner(
         )
         html = annotated_text(*annotated)
         html = html.replace("\n\n", "\n")
-        style = "<style>mark.entity { display: inline-block }</style>"
-        st.write(f"{style}{html}", unsafe_allow_html=True)
+        st.write(html, unsafe_allow_html=True)
         #
         # if show_table:
         #     data = [
