@@ -9,4 +9,5 @@ models = ["en_core_web_sm", "en_core_web_md"]
 default_text = "Sundar Pichai is the CEO of Google."
 visualize(models, default_text,
           sidebar_title="Sherpa demo",
-          sidebar_description="Customizable Sherpa demonstration")
+          sidebar_description="Customizable Sherpa demonstration",
+          show_pipeline_info=False)
