@@ -95,14 +95,12 @@ def visualize(
 
     if show_project:
         if project is not None:
-            project_exp = st.expander("Project meta.json")
-            project_exp.json(get_project(url_input, st.session_state.project, st.session_state.token))
-
-
-    if show_plan:
-        if plan is not None:
-            plan_exp = st.expander("Plan meta.json")
-            plan_exp.json(get_plan(url_input, st.session_state.project, st.session_state.plan, st.session_state.token))
+            project_exp = st.expander("Project definition (json)")
+            project_exp.json(get_project(url_input, project, st.session_state.token))
+        if show_plan:
+            if plan is not None:
+                plan_exp = st.expander("Plan definition (json)")
+                plan_exp.json(get_plan(url_input, project, plan, st.session_state.token))
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,

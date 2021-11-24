@@ -70,8 +70,11 @@ def get_plan_by_label(server: str, project: str, label: str, token: str):
 
 
 def get_plan(server: str, project: str, name: str, token: str):
+    st.write("get_plan(", server, ", ", project, ", ", name, ")")
     plans = get_plans(server, project, token)
+    st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): plans=", str(plans))
     for p in plans:
+        st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): p=", str(p))
         if p['name'] == name:
             plan = p['parameters']
             for annotator in plan['pipeline']:
