@@ -1,3 +1,4 @@
+import html
 import json
 from pathlib import Path
 from typing import List, Tuple, Optional, Dict, Callable
@@ -5,10 +6,12 @@ from typing import List, Tuple, Optional, Dict, Callable
 import pandas as pd
 import plac
 import streamlit as st
-from annotated_text import annotated_text
+from annotated_text import div, annotation
 from collections_extended import RangeMap
 
 # fmt: off
+from htbuilder import HtmlElement
+
 from util import LOGO, get_svg, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
     get_project, get_plan, annotate_with_plan
 
@@ -172,6 +175,60 @@ def main():
         docs = json.load(fin)
     visualize_ner(docs[0])
 
+def annotated_text(*args):
+    """Writes test with annotations into your Streamlit app.
+
+    Parameters
+    ----------
+    *args : str, tuple or htbuilder.HtmlElement
+        Arguments can be:
+        - strings, to draw the string as-is on the screen.
+        - tuples of the form (main_text, annotation_text, background, color) where
+          background and foreground colors are optional and should be an CSS-valid string such as
+          "#aabbcc" or "rgb(10, 20, 30)"
+        - HtmlElement objects in case you want to customize the annotations further. In particular,
+          you can import the `annotation()` function from this module to easily produce annotations
+          whose CSS you can customize via keyword arguments.
+
+    Examples
+    --------
+
+    >>> annotated_text(
+    ...     "This ",
+    ...     ("is", "verb", "#8ef"),
+    ...     " some ",
+    ...     ("annotated", "adj", "#faa"),
+    ...     ("text", "noun", "#afa"),
+    ...     " for those of ",
+    ...     ("you", "pronoun", "#fea"),
+    ...     " who ",
+    ...     ("like", "verb", "#8ef"),
+    ...     " this sort of ",
+    ...     ("thing", "noun", "#afa"),
+    ... )
+
+    >>> annotated_text(
+    ...     "Hello ",
+    ...     annotation("world!", "noun", color="#8ef", border="1px dashed red"),
+    ... )
+
+    """
+    out = div(style="overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 0.25rem; padding: 1rem; margin-bottom: 2.5rem")
+
+    for arg in args:
+        if isinstance(arg, str):
+            out(html.escape(arg))
+
+        elif isinstance(arg, HtmlElement):
+            out(arg)
+
+        elif isinstance(arg, tuple):
+            out(annotation(*arg))
+
+        else:
+            raise Exception("Oh noes!")
+
+    st.markdown(str(out), unsafe_allow_html=True)
 
 if __name__ == "__main__":
     plac.call(main)
