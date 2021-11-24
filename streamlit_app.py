@@ -1,42 +1,23 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
+"""
+Example using the components provided by spacy-streamlit in an existing app.
+Prerequisites:
+python -m spacy download en_core_web_sm
+"""
+import spacy_streamlit
 import streamlit as st
 
-"""
-# Welcome to Streamlit!
+DEFAULT_TEXT = """Google was founded in September 1998 by Larry Page and Sergey Brin while they were Ph.D. students at Stanford University in California. Together they own about 14 percent of its shares and control 56 percent of the stockholder voting power through supervoting stock. They incorporated Google as a California privately held company on September 4, 1998, in California. Google was then reincorporated in Delaware on October 22, 2002."""
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+spacy_model = "en_core_web_sm"
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+st.title("My cool app")
+text = st.text_area("Text to analyze", DEFAULT_TEXT, height=200)
+doc = spacy_streamlit.process_text(spacy_model, text)
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
-
-# Forms can be declared using the 'with' syntax
-with st.form(key='my_form'):
-    text_input = st.text_input(label='Enter your name')
-    submit_button = st.form_submit_button(label='Submit')
-
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
-
-    Point = namedtuple('Point', 'x y')
-    data = []
-
-    points_per_turn = total_points / num_turns
-
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
-
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+spacy_streamlit.visualize_ner(
+    doc,
+    labels=["PERSON", "DATE", "GPE"],
+    show_table=False,
+    title="Persons, dates and locations",
+)
+st.text(f"Analyzed using spaCy model {spacy_model}")
