@@ -148,9 +148,8 @@ def visualize_ner(
         )
         html = annotated_text(*annotated)
         html = html.replace("\n\n", "\n")
-        # if split_sents and len(docs) > 1:
-        #     st.markdown(f"> {sent.text}")
-        st.write(get_svg(html), unsafe_allow_html=True)
+        style = "<style>mark.entity { display: inline-block }</style>"
+        st.write(f"{style}{html}", unsafe_allow_html=True)
         #
         # if show_table:
         #     data = [
