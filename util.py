@@ -73,7 +73,15 @@ def get_plan(server: str, project: str, name: str, token: str):
     plans = get_plans(server, project, token)
     for p in plans:
         if p['name'] == name:
-            return p
+            plan = p['parameters']
+            for annotator in plan['pipeline']:
+                if annotator.get('projectName', None) == ".":
+                    annotator['projectName'] = project
+                # annotator.pop('uuid', None)
+            # if 'formatter' in plan:
+            #     plan['formatter'].pop('uuid', None)
+            #     # del plan['formatter']
+            return plan
     return None
 
 
