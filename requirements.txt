@@ -1,3 +1,2 @@
-spacy_streamlit
 pandas
 streamlit
