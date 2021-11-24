@@ -132,6 +132,8 @@ def visualize_ner(
                 annotated.append(text[start:r.start])
             annotated.append((text[r.start:r.stop], r.value))
             start = r.stop
+        if start < len(text):
+            annotated.append(text[start:])
     else:
         annotated = [text]
     if not labels:
