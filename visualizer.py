@@ -7,7 +7,7 @@ from spacy import displacy
 from spacy.language import Language
 
 # fmt: off
-from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label
+from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 
@@ -68,11 +68,10 @@ def visualize(
     if 'token' in st.session_state:
         projects = get_projects(url_input, st.session_state.token)
         st.sidebar.selectbox('Select project', [p['label'] for p in projects], key="project")
-        project = get_project_by_label(url_input, project_option, st.session_state.token)
-        st.session_state['project'] = project
+        project = get_project_by_label(url_input, st.session_state.project, st.session_state.token)
         plans = get_plans(url_input,
-                          get_project_by_label(url_input, st.session_state.project, st.session_state.token),
-                            st.session_state.token) if project is not None else []
+                          project,
+                          st.session_state.token) if project is not None else []
         st.sidebar.selectbox('Select plan', [p['label'] for p in plans], key="plan")
 
     # Allow both dict of model name / description as well as list of names
