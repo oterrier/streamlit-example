@@ -1,15 +1,15 @@
 from typing import List, Sequence, Tuple, Optional, Dict, Union, Callable
-import streamlit as st
-import spacy
-from spacy.language import Language
-from spacy import displacy
+
 import pandas as pd
-
-# from .util import load_model, process_text, get_svg, get_html, LOGO
-
+import spacy
+import streamlit as st
+from spacy import displacy
+from spacy.language import Language
 
 # fmt: off
-from util import LOGO, process_text, get_svg, get_html, get_token, get_projects, get_plans
+from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans
+
+# from .util import load_model, process_text, get_svg, get_html, LOGO
 
 NER_ATTRS = ["text", "label_", "start", "end", "start_char", "end_char"]
 TOKEN_ATTRS = ["idx", "text", "lemma_", "pos_", "tag_", "dep_", "head", "morph",
@@ -74,21 +74,19 @@ def visualize(
                 project_option = st.selectbox('Select project', [p['label'] for p in projects], key=1)
                 project_submitted = st.form_submit_button('Submit')
                 if project_submitted:
-                    if 'project' not in st.session_state:
-                        for p in projects:
-                            if p['label'] == project_option:
-                                st.session_state['project'] = p['name']
+                    for p in projects:
+                        if p['label'] == project_option:
+                            st.session_state['project'] = p['name']
         with col2:
             with st.form('Plans'):
-                plans = get_plans(url_input, st.session_state.project, st.session_state.token) if 'project' in st.session_state else []
+                plans = get_plans(url_input, st.session_state.project,
+                                  st.session_state.token) if 'project' in st.session_state else []
                 plan_option = st.selectbox('Select plan', [p['label'] for p in plans], key=1)
-                st.slider(label='Select Intensity', min_value=0, max_value=100, key=3)
                 plan_submitted = st.form_submit_button('Submit')
-                if project_submitted:
-                    if 'plan' not in st.session_state:
-                        for p in plans:
-                            if p['label'] == plan_option:
-                                st.session_state['plan'] = p['name']
+                if plan_submitted:
+                    for p in plans:
+                        if p['label'] == plan_option:
+                            st.session_state['plan'] = p['name']
 
     # Allow both dict of model name / description as well as list of names
     model_names = plans
