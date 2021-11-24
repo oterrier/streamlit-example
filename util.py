@@ -45,6 +45,7 @@ def get_project_by_label(server: str, label: str, token: str):
             return p['name']
     return None
 
+
 def get_project(server: str, name: str, token: str):
     projects = get_projects(server, token)
     for p in projects:
@@ -71,6 +72,14 @@ def get_plan_by_label(server: str, project: str, label: str, token: str):
     for p in plans:
         if p['label'] == label:
             return p['name']
+    return None
+
+
+def get_plan(server: str, project: str, name: str, token: str):
+    plans = get_plans(server, project, token)
+    for p in plans:
+        if p['name'] == name:
+            return p
     return None
 
 

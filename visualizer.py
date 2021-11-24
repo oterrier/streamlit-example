@@ -8,7 +8,7 @@ from spacy.language import Language
 
 # fmt: off
 from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
-    get_project
+    get_project, get_plan
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 
@@ -95,11 +95,11 @@ def visualize(
 
     if show_config:
         if project is not None:
-            config_exp = st.expander("Project meta.json")
-            config_exp.json(get_project(url_input, st.session_state.project, st.session_state.token))
-        if planl is not None:
-            config_exp = st.expander("Project meta.json")
-            config_exp.json(get_project(url_input, st.session_state.project, st.session_state.token))
+            project_exp = st.expander("Project meta.json")
+            project_exp.json(get_project(url_input, st.session_state.project, st.session_state.token))
+        if plan is not None:
+            plan_exp = st.expander("Plan meta.json")
+            plan_exp.json(get_plan(url_input, st.session_state.project, st.session_state.plan, st.session_state.token))
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
