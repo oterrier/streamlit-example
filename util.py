@@ -70,11 +70,11 @@ def get_plan_by_label(server: str, project: str, label: str, token: str):
 
 
 def get_plan(server: str, project: str, name: str, token: str):
-    st.write("get_plan(", server, ", ", project, ", ", name, ")")
+    # st.write("get_plan(", server, ", ", project, ", ", name, ")")
     plans = get_plans(server, project, token)
-    st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): plans=", str(plans))
+    # st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): plans=", str(plans))
     for p in plans:
-        st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): p=", str(p))
+        # st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): p=", str(p))
         if p['name'] == name:
             plan = p['parameters']
             for annotator in plan['pipeline']:
@@ -90,11 +90,14 @@ def get_plan(server: str, project: str, name: str, token: str):
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def annotate_with_plan(server: str, project: str, plan: str, text: str, token: str):
+    st.write("annotate_with_plan(", server, ", ", project, ", ", plan, ")")
     url = f"{server}/api/projects/{project}/annotators/{plan}/_annotate"
+    st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "text/plain"}
     r = requests.post(url, data=text, headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
+        st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), doc=", str(doc))
         return doc
     return None
 
