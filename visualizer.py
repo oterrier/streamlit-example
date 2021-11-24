@@ -65,7 +65,7 @@ def visualize(
             if 'token' not in st.session_state:
                 st.session_state['token'] = get_token(url_input, name_input, pwd_input)
 
-    col1, col2 = st.beta_columns(2)
+    col1, col2 = st.columns(2)
 
     if 'token' in st.session_state:
         with col1:
@@ -102,63 +102,22 @@ def visualize(
         if default_model is not None and default_model in model_names
         else 0
     )
-    spacy_model = st.sidebar.selectbox(
-        "Plan",
-        model_names,
-        index=default_model_index,
-        key=f"{key}_visualize_models",
-        format_func=format_func,
-    )
-    model_load_state = st.info(f"Loading model '{spacy_model}'...")
-    nlp = load_model(spacy_model)
-    model_load_state.empty()
 
-    if show_pipeline_info:
-        st.sidebar.subheader("Pipeline info")
-        desc = f"""<p style="font-size: 0.85em; line-height: 1.5"><strong>{spacy_model}:</strong> <code>v{nlp.meta['version']}</code>. {nlp.meta.get("description", "")}</p>"""
-        st.sidebar.markdown(desc, unsafe_allow_html=True)
-
-    if show_visualizer_select:
-        active_visualizers = st.sidebar.multiselect(
-            "Visualizers",
-            options=visualizers,
-            default=list(visualizers),
-            key=f"{key}_viz_select",
-        )
-    else:
-        active_visualizers = visualizers
-
-    default_text = (
-        get_default_text(nlp) if get_default_text is not None else default_text
-    )
     text = st.text_area("Text to analyze", default_text, key=f"{key}_visualize_text")
-    doc = process_text(spacy_model, text)
-
-    if "parser" in visualizers and "parser" in active_visualizers:
-        visualize_parser(doc, key=key)
-    if "ner" in visualizers and "ner" in active_visualizers:
-        ner_labels = ner_labels or nlp.get_pipe("ner").labels
-        visualize_ner(doc, labels=ner_labels, attrs=ner_attrs, key=key)
-    if "textcat" in visualizers and "textcat" in active_visualizers:
-        visualize_textcat(doc)
-    if "similarity" in visualizers and "similarity" in active_visualizers:
-        visualize_similarity(nlp, key=key)
-    if "tokens" in visualizers and "tokens" in active_visualizers:
-        visualize_tokens(doc, attrs=token_attrs, key=key)
 
     if show_json_doc or show_meta or show_config:
         st.header("Pipeline information")
         if show_json_doc:
             json_doc_exp = st.expander("JSON Doc")
-            json_doc_exp.json(doc.to_json())
+            #json_doc_exp.json(doc.to_json())
 
         if show_meta:
             meta_exp = st.expander("Pipeline meta.json")
-            meta_exp.json(nlp.meta)
+            # meta_exp.json(nlp.meta)
 
         if show_config:
             config_exp = st.expander("Pipeline config.cfg")
-            config_exp.code(nlp.config.to_str())
+            # config_exp.code(nlp.config.to_str())
 
     st.sidebar.markdown(
         FOOTER,
