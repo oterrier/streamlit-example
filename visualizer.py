@@ -9,7 +9,7 @@ import pandas as pd
 
 
 # fmt: off
-from util import LOGO, load_model, process_text, get_svg, get_html, get_token
+from util import LOGO, load_model, process_text, get_svg, get_html, get_token, get_projects, get_plans
 
 NER_ATTRS = ["text", "label_", "start", "end", "start_char", "end_char"]
 TOKEN_ATTRS = ["idx", "text", "lemma_", "pos_", "tag_", "dep_", "head", "morph",
@@ -64,6 +64,31 @@ def visualize(
         if submit_button:
             if 'token' not in st.session_state:
                 st.session_state['token'] = get_token(url_input, name_input, pwd_input)
+
+    col1, col2 = st.beta_columns(2)
+
+    if 'token' in st.session_state:
+        with col1:
+            with st.form('Projects'):
+                projects = get_projects(url_input, st.session_state.token)
+                project_option = st.selectbox('Select project', [p['label'] for p in projects], key=1)
+                project_submitted = st.form_submit_button('Submit')
+                if project_submitted:
+                    if 'project' not in st.session_state:
+                        for p in projects:
+                            if p['label'] == project_option:
+                                st.session_state['project'] = p['name']
+        with col2:
+            with st.form('Plans'):
+                plans = get_plans(url_input, st.session_state.project, st.session_state.token) if 'project' in st.session_state else []
+                plan_option = st.selectbox('Select plan', [p['label'] for p in plans], key=1)
+                st.slider(label='Select Intensity', min_value=0, max_value=100, key=3)
+                plan_submitted = st.form_submit_button('Submit')
+                if project_submitted:
+                    if 'plan' not in st.session_state:
+                        for p in plans:
+                            if p['label'] == plan_option:
+                                st.session_state['plan'] = p['name']
 
     # Allow both dict of model name / description as well as list of names
     model_names = plans

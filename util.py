@@ -24,17 +24,36 @@ def get_token(server: str, user: str, password: str):
     else:
         return
 
+
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def load_model(name: str) -> spacy.language.Language:
-    """Load a spaCy model."""
-    # return spacy.load(name)
-    return None
+def get_projects(server: str, token: str):
+    url = f"{server}/api/projects"
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
+    try:
+        response = requests.get(url, headers=headers, verify=False)
+        json_response = json.loads(response.text)
+    except Exception as ex:
+        print("Error connecting to Sherpa server %s: %s" % (server, ex))
+        return
+    return json_response
+
+
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def get_plans(server: str, project: str, token: str):
+    url = f"{server}/api/projects/{project}/plans"
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
+    try:
+        response = requests.get(url, headers=headers, verify=False)
+        json_response = json.loads(response.text)
+    except Exception as ex:
+        print("Error connecting to Sherpa server %s: %s" % (server, ex))
+        return
+    return json_response
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def process_text(model_name: str, text: str) -> spacy.tokens.Doc:
     """Process a text and create a Doc object."""
-    nlp = load_model(model_name)
     return text
 
 
