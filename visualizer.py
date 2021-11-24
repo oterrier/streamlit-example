@@ -189,7 +189,7 @@ def visualize_textcat(
     """Visualizer for text categories."""
     if title:
         st.header(title)
-    st.markdown(f"> {doc.text}")
+    st.markdown(f"> {doc['text']}")
     cats = {c['label']:c.get('score', 1.0) for c in doc['categories']}
     df = pd.DataFrame(cats.items(), columns=("Label", "Score"))
     st.dataframe(df)
