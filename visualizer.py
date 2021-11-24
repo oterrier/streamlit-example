@@ -97,6 +97,7 @@ def visualize(
             doc_exp = st.expander("Annotated doc (json)")
             doc_exp.json(doc)
             visualize_textcat(doc)
+            visualize_ner(doc)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
