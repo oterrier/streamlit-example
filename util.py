@@ -75,7 +75,7 @@ def get_plan(server: str, project: str, name: str, token: str):
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def process_text(model_name: str, text: str) -> spacy.tokens.Doc:
+def process_text(model_name: str, text: str):
     """Process a text and create a Doc object."""
     return text
 
