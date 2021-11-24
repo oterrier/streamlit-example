@@ -15,6 +15,10 @@ forums](https://discuss.streamlit.io).
 In the meantime, below is an example of what you can do with just a few lines of code:
 """
 
+# Forms can be declared using the 'with' syntax
+with st.form(key='my_form'):
+    text_input = st.text_input(label='Enter your name')
+    submit_button = st.form_submit_button(label='Submit')
 
 with st.echo(code_location='below'):
     total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
