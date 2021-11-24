@@ -94,7 +94,7 @@ def visualize(
             doc = annotate_with_plan(url, project, plan, text, st.session_state.token)
             doc_exp = st.expander("Annotated doc (json)")
             doc_exp.json(doc)
-
+            visualize_textcat(doc)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
@@ -184,13 +184,14 @@ def visualize_ner(
 
 
 def visualize_textcat(
-        doc: spacy.tokens.Doc, *, title: Optional[str] = "Text Classification"
+        doc, *, title: Optional[str] = "Text Classification"
 ) -> None:
     """Visualizer for text categories."""
     if title:
         st.header(title)
     st.markdown(f"> {doc.text}")
-    df = pd.DataFrame(doc.cats.items(), columns=("Label", "Score"))
+    cats = {c['label']:c.get('score', 1.0) for c in doc['categories']}
+    df = pd.DataFrame(cats.items(), columns=("Label", "Score"))
     st.dataframe(df)
 
 

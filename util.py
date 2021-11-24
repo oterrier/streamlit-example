@@ -90,14 +90,14 @@ def get_plan(server: str, project: str, name: str, token: str):
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def annotate_with_plan(server: str, project: str, plan: str, text: str, token: str):
-    st.write("annotate_with_plan(", server, ", ", project, ", ", plan, ")")
+    # st.write("annotate_with_plan(", server, ", ", project, ", ", plan, ")")
     url = f"{server}/api/projects/{project}/annotators/{plan}/_annotate"
-    st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), url=", url)
+    # st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "text/plain", 'Accept': "application/json"}
     r = requests.post(url, data=text.encode(encoding="utf-8"), headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
-        st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), doc=", str(doc))
+        # st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), doc=", str(doc))
         return doc
     return None
 
