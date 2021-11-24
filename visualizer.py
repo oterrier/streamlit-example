@@ -7,7 +7,7 @@ from spacy import displacy
 from spacy.language import Language
 
 # fmt: off
-from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans
+from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 
@@ -65,23 +65,16 @@ def visualize(
             if 'token' not in st.session_state:
                 st.session_state['token'] = get_token(url_input, name_input, pwd_input)
 
-    col1, col2 = st.columns(2)
-
     if 'token' in st.session_state:
-        with col1:
-            projects = get_projects(url_input, st.session_state.token)
-            project_option = st.selectbox('Select project', [p['label'] for p in projects], key=1)
-            for p in projects:
-                if p['label'] == project_option:
-                    st.session_state['project'] = p['name']
-    with col2:
-        plans = get_plans(url_input, st.session_state.project,
-                          st.session_state.token) if 'project' in st.session_state else []
-        plan_option = st.selectbox('Select plan', [p['label'] for p in plans], key=1)
-        for p in plans:
-            if p['label'] == plan_option:
-                st.session_state['plan'] = p['name']
-
+        projects = get_projects(url_input, st.session_state.token)
+        project_option = st.sidebar.selectbox('Select project', [p['label'] for p in projects])
+        project = get_project_by_label(url_input, project_option, st.session_state.token)
+        st.session_state['project'] = project
+        plans = get_plans(url_input, project,
+                              st.session_state.token) if project is not None else []
+        plan_option = st.selectbox('Select plan', [p['label'] for p in plans])
+        plan = get_plan_by_label(url_input, project, plan_option, st.session_state.token)
+        st.session_state['plan'] = plan
     # Allow both dict of model name / description as well as list of names
     model_names = plans
     format_func = str

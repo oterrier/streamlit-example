@@ -38,6 +38,14 @@ def get_projects(server: str, token: str):
     return json_response
 
 
+def get_project_by_label(server: str, label: str, token: str):
+    projects = get_projects(server, token)
+    for p in projects:
+        if p['label'] == label:
+            return p['name']
+    return None
+
+
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def get_plans(server: str, project: str, token: str):
     url = f"{server}/api/projects/{project}/plans"
@@ -49,6 +57,14 @@ def get_plans(server: str, project: str, token: str):
         print("Error connecting to Sherpa server %s: %s" % (server, ex))
         return
     return json_response
+
+
+def get_plan_by_label(server: str, project: str, label: str, token: str):
+    plans = get_plans(server, project, token)
+    for p in plans:
+        if p['label'] == label:
+            return p['name']
+    return None
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
