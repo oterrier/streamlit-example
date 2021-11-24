@@ -54,6 +54,13 @@ def visualize(
         st.sidebar.title(sidebar_title)
     if sidebar_description:
         st.sidebar.markdown(sidebar_description)
+    # Forms can be declared using the 'with' syntax
+
+    with st.sidebar.form(key='connect_form'):
+        url_input = st.text_input(label='Sherpa URL', value="https://sherpa-sandbox.kairntech.com/")
+        name_input = st.text_input(label='Name')
+        pwd_input = st.text_input(label='Password', type="password")
+        submit_button = st.form_submit_button(label='Submit')
 
     # Allow both dict of model name / description as well as list of names
     model_names = models
