@@ -1,9 +1,8 @@
+import base64
 import json
 
 import requests
 import streamlit as st
-import spacy
-import base64
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -29,12 +28,8 @@ def get_token(server: str, user: str, password: str):
 def get_projects(server: str, token: str):
     url = f"{server}/api/projects"
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
-    try:
-        response = requests.get(url, headers=headers, verify=False)
-        json_response = json.loads(response.text)
-    except Exception as ex:
-        print("Error connecting to Sherpa server %s: %s" % (server, ex))
-        return
+    response = requests.get(url, headers=headers, verify=False)
+    json_response = json.loads(response.text)
     return json_response
 
 
@@ -58,12 +53,8 @@ def get_project(server: str, name: str, token: str):
 def get_plans(server: str, project: str, token: str):
     url = f"{server}/api/projects/{project}/plans"
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
-    try:
-        response = requests.get(url, headers=headers, verify=False)
-        json_response = json.loads(response.text)
-    except Exception as ex:
-        print("Error connecting to Sherpa server %s: %s" % (server, ex))
-        return
+    response = requests.get(url, headers=headers, verify=False)
+    json_response = json.loads(response.text)
     return json_response
 
 
