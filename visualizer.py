@@ -7,7 +7,8 @@ from spacy import displacy
 from spacy.language import Language
 
 # fmt: off
-from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label
+from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
+    get_project
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 
@@ -65,6 +66,8 @@ def visualize(
             if 'token' not in st.session_state:
                 st.session_state['token'] = get_token(url_input, name_input, pwd_input)
 
+    plan = None
+    project = None
     if 'token' in st.session_state:
         projects = get_projects(url_input, st.session_state.token)
         st.sidebar.selectbox('Select project', [p['label'] for p in projects], key="project")
@@ -73,6 +76,7 @@ def visualize(
                           project,
                           st.session_state.token) if project is not None else []
         st.sidebar.selectbox('Select plan', [p['label'] for p in plans], key="plan")
+        plan = get_plan_by_label(url_input, st.session_state.project, st.session_state.plan, st.session_state.token)
 
     # Allow both dict of model name / description as well as list of names
     model_names = plans
@@ -89,20 +93,13 @@ def visualize(
 
     text = st.text_area("Text to analyze", default_text, key=f"{key}_visualize_text")
 
-    if show_json_doc or show_meta or show_config:
-        st.header("Pipeline information")
-        if show_json_doc:
-            json_doc_exp = st.expander("JSON Doc")
-            #json_doc_exp.json(doc.to_json())
-
-        if show_meta:
-            meta_exp = st.expander("Pipeline meta.json")
-            # meta_exp.json(nlp.meta)
-
-        if show_config:
-            config_exp = st.expander("Pipeline config.cfg")
-            # config_exp.code(nlp.config.to_str())
-
+    if show_config:
+        if project is not None:
+            config_exp = st.expander("Project meta.json")
+            config_exp.json(get_project(url_input, st.session_state.project, st.session_state.token))
+        if planl is not None:
+            config_exp = st.expander("Project meta.json")
+            config_exp.json(get_project(url_input, st.session_state.project, st.session_state.token))
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
