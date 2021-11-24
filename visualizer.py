@@ -73,14 +73,14 @@ def visualize(
     url = url_input[0:-1] if url_input.endswith('/') else url_input
     if 'token' in st.session_state:
         all_projects = get_projects(url, st.session_state.token)
-        selected_projects = [p['label'] for p in all_projects if projects is None or p['name'] in projects]
+        selected_projects = sorted([p['label'] for p in all_projects if projects is None or p['name'] in projects])
         st.sidebar.selectbox('Select project', selected_projects, key="project")
         if st.session_state.get('project', None) is not None:
             project = get_project_by_label(url, st.session_state.project, st.session_state.token)
             all_plans = get_plans(url,
                               project,
                               st.session_state.token) if project is not None else []
-            selected_plans = [p['label'] for p in all_plans if plans is None or p['name'] in plans]
+            selected_plans = sorted([p['label'] for p in all_plans if plans is None or p['name'] in plans])
             st.sidebar.selectbox('Select plan', selected_plans, key="plan")
             if st.session_state.get('plan', None) is not None:
                 plan = get_plan_by_label(url, project, st.session_state.plan, st.session_state.token)
