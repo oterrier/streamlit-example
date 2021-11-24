@@ -71,12 +71,14 @@ def visualize(
     if 'token' in st.session_state:
         projects = get_projects(url_input, st.session_state.token)
         st.sidebar.selectbox('Select project', [p['label'] for p in projects], key="project")
-        project = get_project_by_label(url_input, st.session_state.project, st.session_state.token)
-        plans = get_plans(url_input,
-                          project,
-                          st.session_state.token) if project is not None else []
-        st.sidebar.selectbox('Select plan', [p['label'] for p in plans], key="plan")
-        plan = get_plan_by_label(url_input, project, st.session_state.plan, st.session_state.token)
+        if st.session_state.get('project', None) is not None:
+            project = get_project_by_label(url_input, st.session_state.project, st.session_state.token)
+            plans = get_plans(url_input,
+                              project,
+                              st.session_state.token) if project is not None else []
+            st.sidebar.selectbox('Select plan', [p['label'] for p in plans], key="plan")
+            if st.session_state.get('plan', None) is not None:
+                plan = get_plan_by_label(url_input, project, st.session_state.plan, st.session_state.token)
 
     # Allow both dict of model name / description as well as list of names
     model_names = plans
