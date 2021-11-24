@@ -167,7 +167,7 @@ def visualize_textcat(
     """Visualizer for text categories."""
     if title:
         st.header(title)
-    st.markdown(f"> {doc['text']}")
+    # st.markdown(f"> {doc['text']}")
     cats = {c['label']:c.get('score', 1.0) for c in doc['categories']}
     df = pd.DataFrame(cats.items(), columns=("Label", "Score"))
     st.dataframe(df)
@@ -217,7 +217,7 @@ def annotated_text(*args):
     ... )
 
     """
-    out = div(style="white-space: pre; overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 0.25rem; padding: 1rem; margin-bottom: 2.5rem")
+    out = div(style="white-space: pre-wrap; overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 0.25rem; padding: 1rem; margin-bottom: 2.5rem")
 
     for arg in args:
         if isinstance(arg, str):
