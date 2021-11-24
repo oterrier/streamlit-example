@@ -59,8 +59,11 @@ def get_plans(server: str, project: str, token: str):
 
 
 def get_plan_by_label(server: str, project: str, label: str, token: str):
+    st.write("get_plan_by_label(", server, ", ", project, ", ", label, "): 0")
     plans = get_plans(server, project, token)
+    st.write("get_plan_by_label(", server, ", ", project, ", ", label, "): plans=", str(plans))
     for p in plans:
+        st.write("get_plan_by_label(", server, ", ", project, ", ", label, "): p=", str(p))
         if p['label'] == label:
             return p['name']
     return None
