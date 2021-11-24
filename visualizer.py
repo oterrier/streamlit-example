@@ -69,24 +69,18 @@ def visualize(
 
     if 'token' in st.session_state:
         with col1:
-            with st.form('Projects'):
-                projects = get_projects(url_input, st.session_state.token)
-                project_option = st.selectbox('Select project', [p['label'] for p in projects], key=1)
-                project_submitted = st.form_submit_button('Submit')
-                if project_submitted:
-                    for p in projects:
-                        if p['label'] == project_option:
-                            st.session_state['project'] = p['name']
-        with col2:
-            with st.form('Plans'):
-                plans = get_plans(url_input, st.session_state.project,
-                                  st.session_state.token) if 'project' in st.session_state else []
-                plan_option = st.selectbox('Select plan', [p['label'] for p in plans], key=1)
-                plan_submitted = st.form_submit_button('Submit')
-                if plan_submitted:
-                    for p in plans:
-                        if p['label'] == plan_option:
-                            st.session_state['plan'] = p['name']
+            projects = get_projects(url_input, st.session_state.token)
+            project_option = st.selectbox('Select project', [p['label'] for p in projects], key=1)
+            for p in projects:
+                if p['label'] == project_option:
+                    st.session_state['project'] = p['name']
+    with col2:
+        plans = get_plans(url_input, st.session_state.project,
+                          st.session_state.token) if 'project' in st.session_state else []
+        plan_option = st.selectbox('Select plan', [p['label'] for p in plans], key=1)
+        for p in plans:
+            if p['label'] == plan_option:
+                st.session_state['plan'] = p['name']
 
     # Allow both dict of model name / description as well as list of names
     model_names = plans
