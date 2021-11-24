@@ -10,4 +10,8 @@ default_text = "Sundar Pichai is the CEO of Google."
 visualize(models, default_text,
           sidebar_title="Sherpa demo",
           sidebar_description="Customizable Sherpa demonstration",
+          show_json_doc=False,
+          show_meta=False,
+          show_config=False,
+          show_visualizer_select=False,
           show_pipeline_info=False)

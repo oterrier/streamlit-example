@@ -23,7 +23,7 @@ def visualize(
     plans: Union[List[str], Dict[str, str]],
     default_text: str = "",
     default_model: Optional[str] = None,
-    visualizers: List[str] = ["parser", "ner", "textcat", "similarity", "tokens"],
+    visualizers: List[str] = [],
     ner_labels: Optional[List[str]] = None,
     ner_attrs: List[str] = NER_ATTRS,
     similarity_texts: Tuple[str, str] = ("apple", "orange"),
