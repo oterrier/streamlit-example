@@ -9,7 +9,7 @@ import pandas as pd
 
 
 # fmt: off
-from util import LOGO, load_model, process_text, get_svg, get_html, get_token, get_projects, get_plans
+from util import LOGO, process_text, get_svg, get_html, get_token, get_projects, get_plans
 
 NER_ATTRS = ["text", "label_", "start", "end", "start_char", "end_char"]
 TOKEN_ATTRS = ["idx", "text", "lemma_", "pos_", "tag_", "dep_", "head", "morph",
