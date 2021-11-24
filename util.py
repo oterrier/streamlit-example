@@ -89,6 +89,17 @@ def get_plan(server: str, project: str, name: str, token: str):
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def annotate_with_plan(server: str, project: str, plan: str, text: str, token: str):
+    url = f"{server}/api/projects/{project}/annotators/{plan}/_annotate"
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "text/plain"}
+    r = requests.post(url, data=text, headers=headers, verify=False, timeout=1000)
+    if r.ok:
+        doc = r.json()
+        return doc
+    return None
+
+
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def process_text(model_name: str, text: str):
     """Process a text and create a Doc object."""
     return text

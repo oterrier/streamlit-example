@@ -8,7 +8,7 @@ from spacy.language import Language
 
 # fmt: off
 from util import LOGO, get_svg, get_html, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
-    get_project, get_plan
+    get_project, get_plan, annotate_with_plan
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 
@@ -21,23 +21,23 @@ FOOTER = """<span style="font-size: 0.75em">&hearts; Built with [`spacy-streamli
 
 
 def visualize(
-    plans: Union[List[str], Dict[str, str]],
-    default_text: str = "",
-    default_model: Optional[str] = None,
-    visualizers: List[str] = [],
-    ner_labels: Optional[List[str]] = None,
-    ner_attrs: List[str] = NER_ATTRS,
-    similarity_texts: Tuple[str, str] = ("apple", "orange"),
-    token_attrs: List[str] = TOKEN_ATTRS,
-    show_project: bool = True,
-    show_plan: bool = True,
-    show_visualizer_select: bool = False,
-    sidebar_title: Optional[str] = None,
-    sidebar_description: Optional[str] = None,
-    show_logo: bool = True,
-    color: Optional[str] = "#09A3D5",
-    key: Optional[str] = None,
-    get_default_text: Callable[[Language], str] = None,
+        projects: List[str] = None,
+        plans: List[str] = None,
+        default_text: str = "",
+        visualizers: List[str] = [],
+        ner_labels: Optional[List[str]] = None,
+        ner_attrs: List[str] = NER_ATTRS,
+        similarity_texts: Tuple[str, str] = ("apple", "orange"),
+        token_attrs: List[str] = TOKEN_ATTRS,
+        show_project: bool = True,
+        show_plan: bool = True,
+        show_visualizer_select: bool = False,
+        sidebar_title: Optional[str] = None,
+        sidebar_description: Optional[str] = None,
+        show_logo: bool = True,
+        color: Optional[str] = "#09A3D5",
+        key: Optional[str] = None,
+        get_default_text: Callable[[Language], str] = None,
 ) -> None:
     """Embed the full visualizer with selected components."""
 
@@ -67,40 +67,33 @@ def visualize(
     plan = None
     project = None
     if 'token' in st.session_state:
-        projects = get_projects(url_input, st.session_state.token)
-        st.sidebar.selectbox('Select project', [p['label'] for p in projects], key="project")
+        all_projects = get_projects(url_input, st.session_state.token)
+        selected_projects = [p['label'] for p in all_projects if projects is None or p['name'] in projects]
+        st.sidebar.selectbox('Select project', selected_projects, key="project")
         if st.session_state.get('project', None) is not None:
             project = get_project_by_label(url_input, st.session_state.project, st.session_state.token)
-            plans = get_plans(url_input,
+            all_plans = get_plans(url_input,
                               project,
                               st.session_state.token) if project is not None else []
-            st.sidebar.selectbox('Select plan', [p['label'] for p in plans], key="plan")
+            selected_plans = [p['label'] for p in all_plans if plans is None or p['name'] in plans]
+            st.sidebar.selectbox('Select plan', selected_plans, key="plan")
             if st.session_state.get('plan', None) is not None:
                 plan = get_plan_by_label(url_input, project, st.session_state.plan, st.session_state.token)
 
-    # Allow both dict of model name / description as well as list of names
-    model_names = plans
-    format_func = str
-    if isinstance(plans, dict):
-        format_func = lambda name: plans.get(name, name)
-        model_names = list(plans.keys())
-
-    default_model_index = (
-        model_names.index(default_model)
-        if default_model is not None and default_model in model_names
-        else 0
-    )
-
     text = st.text_area("Text to analyze", default_text, key=f"{key}_visualize_text")
-
-    if show_project:
-        if project is not None:
+    if project is not None:
+        if show_project:
             project_exp = st.expander("Project definition (json)")
             project_exp.json(get_project(url_input, project, st.session_state.token))
-        if show_plan:
-            if plan is not None:
+        if plan is not None:
+            pipe = get_plan(url_input, project, plan, st.session_state.token)
+            if show_plan:
                 plan_exp = st.expander("Plan definition (json)")
-                plan_exp.json(get_plan(url_input, project, plan, st.session_state.token))
+                plan_exp.json(pipe)
+            doc = annotate_with_plan(url_input, project, plan, text, st.session_state.token)
+            doc_exp = st.expander("Annotated doc (json)")
+            doc_exp.json(doc)
+
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
@@ -108,10 +101,10 @@ def visualize(
 
 
 def visualize_parser(
-    doc: spacy.tokens.Doc,
-    *,
-    title: Optional[str] = "Dependency Parse & Part-of-speech tags",
-    key: Optional[str] = None,
+        doc: spacy.tokens.Doc,
+        *,
+        title: Optional[str] = "Dependency Parse & Part-of-speech tags",
+        key: Optional[str] = None,
 ) -> None:
     """Visualizer for dependency parses."""
     if title:
@@ -140,15 +133,15 @@ def visualize_parser(
 
 
 def visualize_ner(
-    doc: Union[spacy.tokens.Doc, List[Dict[str, str]]],
-    *,
-    labels: Sequence[str] = tuple(),
-    attrs: List[str] = NER_ATTRS,
-    show_table: bool = True,
-    title: Optional[str] = "Named Entities",
-    colors: Dict[str, str] = {},
-    key: Optional[str] = None,
-    manual: Optional[bool] = False,
+        doc: Union[spacy.tokens.Doc, List[Dict[str, str]]],
+        *,
+        labels: Sequence[str] = tuple(),
+        attrs: List[str] = NER_ATTRS,
+        show_table: bool = True,
+        title: Optional[str] = "Named Entities",
+        colors: Dict[str, str] = {},
+        key: Optional[str] = None,
+        manual: Optional[bool] = False,
 ) -> None:
     """Visualizer for named entities."""
     if title:
@@ -158,10 +151,11 @@ def visualize_ner(
         if show_table:
             st.warning("When the parameter 'manual' is set to True, the parameter 'show_table' must be set to False.")
         if not isinstance(doc, list):
-            st.warning("When the parameter 'manual' is set to True, the parameter 'doc' must be of type 'list', not 'spacy.tokens.Doc'.")
+            st.warning(
+                "When the parameter 'manual' is set to True, the parameter 'doc' must be of type 'list', not 'spacy.tokens.Doc'.")
     else:
         labels = labels or [ent.label_ for ent in doc.ents]
- 
+
     if not labels:
         st.warning("The parameter 'labels' should not be empty or None.")
     else:
@@ -189,7 +183,7 @@ def visualize_ner(
 
 
 def visualize_textcat(
-    doc: spacy.tokens.Doc, *, title: Optional[str] = "Text Classification"
+        doc: spacy.tokens.Doc, *, title: Optional[str] = "Text Classification"
 ) -> None:
     """Visualizer for text categories."""
     if title:
@@ -200,12 +194,12 @@ def visualize_textcat(
 
 
 def visualize_similarity(
-    nlp: spacy.language.Language,
-    default_texts: Tuple[str, str] = ("apple", "orange"),
-    *,
-    threshold: float = 0.5,
-    title: Optional[str] = "Vectors & Similarity",
-    key: Optional[str] = None,
+        nlp: spacy.language.Language,
+        default_texts: Tuple[str, str] = ("apple", "orange"),
+        *,
+        threshold: float = 0.5,
+        title: Optional[str] = "Vectors & Similarity",
+        key: Optional[str] = None,
 ) -> None:
     """Visualizer for semantic similarity using word vectors."""
     meta = nlp.meta.get("vectors", {})
@@ -235,11 +229,11 @@ def visualize_similarity(
 
 
 def visualize_tokens(
-    doc: spacy.tokens.Doc,
-    *,
-    attrs: List[str] = TOKEN_ATTRS,
-    title: Optional[str] = "Token attributes",
-    key: Optional[str] = None,
+        doc: spacy.tokens.Doc,
+        *,
+        attrs: List[str] = TOKEN_ATTRS,
+        title: Optional[str] = "Token attributes",
+        key: Optional[str] = None,
 ) -> None:
     """Visualizer for token attributes."""
     if title:
