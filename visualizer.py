@@ -144,7 +144,11 @@ def visualize_ner(
             default=list(labels.values()),
             key=f"{key}_ner_label_select",
         )
-        annotated_text(*annotated)
+        html = annotated_text(*annotated)
+        html = html.replace("\n\n", "\n")
+        # if split_sents and len(docs) > 1:
+        #     st.markdown(f"> {sent.text}")
+        st.write(get_svg(html), unsafe_allow_html=True)
         #
         # if show_table:
         #     data = [
@@ -228,7 +232,7 @@ def annotated_text(*args):
         else:
             raise Exception("Oh noes!")
 
-    st.markdown(str(out), unsafe_allow_html=True)
+    return str(out)
 
 if __name__ == "__main__":
     plac.call(main)
