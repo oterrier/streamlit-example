@@ -20,7 +20,7 @@ FOOTER = """<span style="font-size: 0.75em">&hearts; Built with [`spacy-streamli
 
 
 def visualize(
-    models: Union[List[str], Dict[str, str]],
+    plans: Union[List[str], Dict[str, str]],
     default_text: str = "",
     default_model: Optional[str] = None,
     visualizers: List[str] = ["parser", "ner", "textcat", "similarity", "tokens"],
@@ -60,14 +60,14 @@ def visualize(
         url_input = st.text_input(label='Sherpa URL', value="https://sherpa-sandbox.kairntech.com/")
         name_input = st.text_input(label='Name')
         pwd_input = st.text_input(label='Password', type="password")
-        submit_button = st.form_submit_button(label='Submit')
+        submit_button = st.form_submit_button(label='Connect')
 
     # Allow both dict of model name / description as well as list of names
-    model_names = models
+    model_names = plans
     format_func = str
-    if isinstance(models, dict):
-        format_func = lambda name: models.get(name, name)
-        model_names = list(models.keys())
+    if isinstance(plans, dict):
+        format_func = lambda name: plans.get(name, name)
+        model_names = list(plans.keys())
 
     default_model_index = (
         model_names.index(default_model)
@@ -75,7 +75,7 @@ def visualize(
         else 0
     )
     spacy_model = st.sidebar.selectbox(
-        "Model",
+        "Plan",
         model_names,
         index=default_model_index,
         key=f"{key}_visualize_models",
