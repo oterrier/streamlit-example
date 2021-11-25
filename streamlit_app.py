@@ -15,8 +15,12 @@ Très cordialement,
 """
 # Reads
 projects = None
-plans = None
-visualize(projects, plans, default_text,
+annotators = None
+types = ["learner", "plan", "gazetteer"]
+visualize(default_text,
+          projects, annotators,
+          annotator_types=types,
+          favorite_only=False,
           sidebar_title="Sherpa demo",
           sidebar_description="Customizable Sherpa demonstration",
           show_visualizer_select=False)

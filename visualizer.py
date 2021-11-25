@@ -11,8 +11,8 @@ from collections_extended import RangeMap
 # fmt: off
 from htbuilder import HtmlElement
 
-from util import LOGO, get_token, get_projects, get_plans, get_project_by_label, get_plan_by_label, \
-    get_project, get_plan, annotate_with_plan
+from util import LOGO, get_token, get_projects, get_annotators, get_project_by_label, get_annotator_by_label, \
+    get_project, get_annotator, annotate_with_annotator
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 
@@ -25,16 +25,18 @@ FOOTER = """<span style="font-size: 0.75em">&hearts; Built with [`spacy-streamli
 
 
 def visualize(
-        projects: List[str] = None,
-        plans: List[str] = None,
         default_text: str = "",
+        projects: List[str] = None,
+        annotators: List[str] = None,
+        annotator_types: List[str] = None,
         visualizers: List[str] = [],
+        favorite_only: bool = False,
         ner_labels: Optional[List[str]] = None,
         ner_attrs: List[str] = NER_ATTRS,
         similarity_texts: Tuple[str, str] = ("apple", "orange"),
         token_attrs: List[str] = TOKEN_ATTRS,
         show_project: bool = True,
-        show_plan: bool = True,
+        show_annotator: bool = True,
         show_visualizer_select: bool = False,
         sidebar_title: Optional[str] = None,
         sidebar_description: Optional[str] = None,
@@ -68,8 +70,9 @@ def visualize(
             if 'token' not in st.session_state:
                 st.session_state['token'] = get_token(url_input, name_input, pwd_input)
 
-    plan = None
+    annotator = None
     project = None
+    annotator_info = None
     url = url_input[0:-1] if url_input.endswith('/') else url_input
     if 'token' in st.session_state:
         all_projects = get_projects(url, st.session_state.token)
@@ -77,37 +80,41 @@ def visualize(
         st.sidebar.selectbox('Select project', selected_projects, key="project")
         if st.session_state.get('project', None) is not None:
             project = get_project_by_label(url, st.session_state.project, st.session_state.token)
-            all_plans = get_plans(url,
-                              project,
-                              st.session_state.token) if project is not None else []
-            selected_plans = sorted([p['label'] for p in all_plans if plans is None or p['name'] in plans])
-            st.sidebar.selectbox('Select plan', selected_plans, key="plan")
-            if st.session_state.get('plan', None) is not None:
-                plan = get_plan_by_label(url, project, st.session_state.plan, st.session_state.token)
-
-    if project is not None:
+            all_annotators = get_annotators(url,
+                                            project,
+                                            tuple(annotator_types), favorite_only,
+                                            st.session_state.token) if project is not None else []
+            selected_annotators = sorted(
+                [p['label'] for p in all_annotators if annotators is None or p['name'] in annotators])
+            st.sidebar.selectbox('Select annotator', selected_annotators, key="annotator")
+            if st.session_state.get('annotator', None) is not None:
+                annotator = get_annotator_by_label(url, project, tuple(annotator_types), favorite_only,
+                                                   st.session_state.annotator, st.session_state.token)
+    if show_project or show_annotator:
+        col1, col2, = st.columns(2)
         if show_project:
-            project_exp = st.expander("Project definition (json)")
-            project_exp.json(get_project(url, project, st.session_state.token))
-        if plan is not None:
-            pipe = get_plan(url, project, plan, st.session_state.token)
-            if show_plan:
-                plan_exp = st.expander("Plan definition (json)")
-                plan_exp.json(pipe)
+            with col1:
+                project_exp = st.expander("Project definition (json)")
+                project_exp.json(get_project(url, project, st.session_state.token))
+            if show_annotator:
+                with col2:
+                    annotator_exp = st.expander("Annotator definition (json)")
+                    annotator_exp.json(annotator)
+
     st.text_area("Text to analyze", default_text, key="visualize_text")
-    if project is not None and plan is not None:
-        doc = annotate_with_plan(url, project, plan, st.session_state.visualize_text, st.session_state.token)
+    if project is not None and annotator is not None:
+        doc = annotate_with_annotator(url, project, annotator['name'], st.session_state.visualize_text, st.session_state.token)
         doc_exp = st.expander("Annotated doc (json)")
         doc_exp.json(doc)
-        visualize_textcat(doc)
-        visualize_ner(doc)
+        visualize_annotated_doc(doc, annotator)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
     )
 
-def visualize_ner(
+def visualize_annotated_doc(
         doc,
+        annotator,
         *,
         show_table: bool = True,
         title: Optional[str] = "Named Entities",
@@ -117,20 +124,22 @@ def visualize_ner(
     """Visualizer for named entities."""
     if title:
         st.header(title)
-    labels = {}
+    categories = doc.get('categories', [])
+    cats = {c['name']: c.get('score', 1.0) for c in doc['categories']}
+    labels = annotator['labels']
     annotation_map = RangeMap()
     annotations = doc.get('annotations', [])
     text = doc['text']
     if annotations:
         for a in annotations:
-            labels[a['labelName']] = a['label']
-            annotation_map[a['start']:a['end']] = a['labelName']
+            annotation_map[a['start']:a['end']] = a
         start = 0
         annotated = []
         for r in annotation_map.ranges():
             if r.start > start:
                 annotated.append(text[start:r.start])
-            annotated.append((text[r.start:r.stop], r.value))
+            a = r.value
+            annotated.append((text[r.start:r.stop], a['labelName'], labels[a['label']['color']]))
             start = r.stop
         if start < len(text):
             annotated.append(text[start:])
@@ -139,13 +148,13 @@ def visualize_ner(
     if not labels:
         st.warning("The parameter 'labels' should not be empty or None.")
     else:
-        exp = st.expander("Select annotation labels")
-        label_select = exp.multiselect(
-            "Entity labels",
-            options=labels.values(),
-            default=list(labels.values()),
-            key=f"{key}_ner_label_select",
-        )
+        # exp = st.expander("Select annotation labels")
+        # label_select = exp.multiselect(
+        #     "Entity labels",
+        #     options=labels.values(),
+        #     default=list(labels.values()),
+        #     key=f"{key}_ner_label_select",
+        # )
         html = annotated_text(*annotated)
         html = html.replace("\n\n", "\n")
         st.write(html, unsafe_allow_html=True)
@@ -160,24 +169,6 @@ def visualize_ner(
         #         df = pd.DataFrame(data, columns=attrs)
         #         st.dataframe(df)
 
-
-def visualize_textcat(
-        doc, *, title: Optional[str] = "Text Classification"
-) -> None:
-    """Visualizer for text categories."""
-    if title:
-        st.header(title)
-    # st.markdown(f"> {doc['text']}")
-    cats = {c['label']:c.get('score', 1.0) for c in doc['categories']}
-    df = pd.DataFrame(cats.items(), columns=("Label", "Score"))
-    st.dataframe(df)
-
-def main():
-    testdir = Path(__file__).parent
-    source = Path(testdir, 'slots.json')
-    with source.open("r") as fin:
-        docs = json.load(fin)
-    visualize_ner(docs[0])
 
 def annotated_text(*args):
     """Writes test with annotations into your Streamlit app.

@@ -1,5 +1,6 @@
 import base64
 import json
+from typing import List, Tuple
 
 import requests
 import streamlit as st
@@ -9,14 +10,10 @@ import streamlit as st
 def get_token(server: str, user: str, password: str):
     url = f"{server}/api/auth/login"
     auth = {"email": user, "password": password}
-    try:
-        response = requests.post(url, json=auth,
-                                 headers={'Content-Type': "application/json", 'Accept': "application/json"},
-                                 verify=False)
-        json_response = json.loads(response.text)
-    except Exception as ex:
-        print("Error connecting to Sherpa server %s: %s" % (server, ex))
-        return
+    response = requests.post(url, json=auth,
+                             headers={'Content-Type': "application/json", 'Accept': "application/json"},
+                             verify=False)
+    json_response = json.loads(response.text)
     if 'access_token' in json_response:
         token = json_response['access_token']
         return token
@@ -28,9 +25,10 @@ def get_token(server: str, user: str, password: str):
 def get_projects(server: str, token: str):
     url = f"{server}/api/projects"
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
-    response = requests.get(url, headers=headers, verify=False)
-    json_response = json.loads(response.text)
-    return json_response
+    r = requests.get(url, headers=headers, verify=False)
+    if r.ok:
+        return r.json()
+    return None
 
 
 def get_project_by_label(server: str, label: str, token: str):
@@ -50,54 +48,96 @@ def get_project(server: str, name: str, token: str):
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def get_plans(server: str, project: str, token: str):
-    url = f"{server}/api/projects/{project}/plans"
+def get_annotators(server: str, project: str, annotator_types: Tuple[str], favorite_only: bool, token: str):
+    url = f"{server}/api/projects/{project}/annotators_by_type"
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
-    response = requests.get(url, headers=headers, verify=False)
-    json_response = json.loads(response.text)
-    return json_response
+    r = requests.get(url, headers=headers, verify=False)
+    annotators = []
+    if r.ok:
+        json_response = r.json()
+        for type, annotator in json_response.items():
+            if annotator_types is None or type in annotator_types:
+                if not favorite_only or annotator.get('favorite', False):
+                    annotator['type'] = type
+                    annotators.append(annotator)
+    return annotators
 
 
-def get_plan_by_label(server: str, project: str, label: str, token: str):
-    # st.write("get_plan_by_label(", server, ", ", project, ", ", label, ")")
-    plans = get_plans(server, project, token)
-    # st.write("get_plan_by_label(", server, ", ", project, ", ", label, "): plans=", str(plans))
-    for p in plans:
-        # st.write("get_plan_by_label(", server, ", ", project, ", ", label, "): p=", str(p))
-        if p['label'] == label:
-            return p['name']
-    return None
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def get_labels(server: str, project: str, token: str):
+    url = f"{server}/api/projects/{project}/labels"
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
+    r = requests.get(url, headers=headers, verify=False)
+    labels = {}
+    if r.ok:
+        json_response = r.json()
+        for lab in json_response.items():
+            labels[lab['name']] = lab
+    return labels
 
 
-def get_plan(server: str, project: str, name: str, token: str):
-    # st.write("get_plan(", server, ", ", project, ", ", name, ")")
-    plans = get_plans(server, project, token)
-    # st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): plans=", str(plans))
-    for p in plans:
-        # st.write("get_plan_by_label(", server, ", ", project, ", ", name, "): p=", str(p))
-        if p['name'] == name:
-            plan = p['parameters']
-            for annotator in plan['pipeline']:
-                if annotator.get('projectName', None) == ".":
-                    annotator['projectName'] = project
-                # annotator.pop('uuid', None)
-            # if 'formatter' in plan:
-            #     plan['formatter'].pop('uuid', None)
-            #     # del plan['formatter']
-            return plan
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def get_annotator_by_label(server: str, project: str, annotator_types: Tuple[str], favorite_only: bool,
+                           label: str, token: str):
+    # st.write("get_annotator_by_label(", server, ", ", project, ", ", label, ")")
+    annotators = get_annotators(server, project, annotator_types, favorite_only, token)
+    # st.write("get_annotator_by_label(", server, ", ", project, ", ", label, "): annotators=", str(annotators))
+    for i, ann in enumerate(annotators):
+        # st.write("get_annotator_by_label(", server, ", ", project, ", ", label, "): p=", str(p))
+        if ann['label'] == label:
+            all_labels = {}
+            if ann['type'] == 'plan':
+                plan = get_plan(server, project, ann['name'], token)
+                if plan is not None:
+                    ann.update(plan)
+                    definition = plan['parameters']
+                    for step in definition['pipeline']:
+                        if step.get('projectName', None) != ".":
+                            step_labels = get_labels(server, step['projectName'], token)
+                            all_labels.update(step_labels)
+            project_labels = get_labels(server, project, token)
+            all_labels.update(project_labels)
+            ann['labels'] = all_labels
+            return ann
     return None
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def annotate_with_plan(server: str, project: str, plan: str, text: str, token: str):
-    # st.write("annotate_with_plan(", server, ", ", project, ", ", plan, ")")
-    url = f"{server}/api/projects/{project}/annotators/{plan}/_annotate"
-    # st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), url=", url)
+def get_plan(server: str, project: str, name: str, token: str):
+    url = f"{server}/api/projects/{project}/plans/{name}"
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
+    r = requests.get(url, headers=headers, verify=False)
+    if r.ok:
+        return r.json()
+    return None
+    # st.write("get_annotator(", server, ", ", project, ", ", name, ")")
+    annotators = get_annotators(server, project, token)
+    # st.write("get_annotator_by_label(", server, ", ", project, ", ", name, "): annotators=", str(annotators))
+    for p in annotators:
+        # st.write("get_annotator_by_label(", server, ", ", project, ", ", name, "): p=", str(p))
+        if p['name'] == name:
+            annotator = p['parameters']
+            for annotator in annotator['pipeline']:
+                if annotator.get('projectName', None) == ".":
+                    annotator['projectName'] = project
+                # annotator.pop('uuid', None)
+            # if 'formatter' in annotator:
+            #     annotator['formatter'].pop('uuid', None)
+            #     # del annotator['formatter']
+            return annotator
+    return None
+
+
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def annotate_with_annotator(server: str, project: str, annotator: str, text: str, token: str):
+    # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, ")")
+    url = f"{server}/api/projects/{project}/annotators/{annotator}/_annotate"
+    # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "text/plain", 'Accept': "application/json"}
     r = requests.post(url, data=text.encode(encoding="utf-8"), headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
-        # st.write("annotate_with_plan(", server, ", ", project, ", ", plan, "), doc=", str(doc))
+        # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
         return doc
     return None
 
