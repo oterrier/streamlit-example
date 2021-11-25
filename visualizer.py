@@ -125,7 +125,7 @@ def visualize_annotated_doc(
     if title:
         st.header(title)
     categories = doc.get('categories', [])
-    cats = {c['name']: c.get('score', 1.0) for c in doc['categories']}
+    cats = {c['name']: c.get('score', 1.0) for c in categories}
     labels = annotator['labels']
     annotation_map = RangeMap()
     annotations = doc.get('annotations', [])
