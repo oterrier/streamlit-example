@@ -1,5 +1,6 @@
 import base64
 import json
+from io import BytesIO
 from typing import Tuple
 import requests
 import streamlit as st
@@ -159,13 +160,15 @@ def annotate_text(server: str, project: str, annotator: str, text: str, token: s
 
 
 def annotate_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
-    # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, ")")
+    st.write("annotate_binary(", server, ", ", project, ", ", annotator, ")")
     url = f"{server}/api/project/{project}/plan/{annotator}/_annotate_binary"
-    # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), url=", url)
+    st.write("annotate_binary(", server, ", ", project, ", ", annotator, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token,
                'Accept': "application/json", "Content-Type": "multipart/form-data" }
+    st.write("annotate_binary(", server, ", ", project, ", ", annotator, "), name=", datafile.name, ", type", datafile.type)
+    bio = BytesIO(datafile.getvalue())
     multiple_files = [
-        ('file', (datafile.name, datafile.getvalue(), datafile.type))
+        ('file', (datafile.name, bio, datafile.type))
     ]
     r = requests.post(url, files=multiple_files, headers=headers, verify=False, timeout=1000)
     if r.ok:
