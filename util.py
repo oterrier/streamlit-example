@@ -161,7 +161,7 @@ def annotate_text(server: str, project: str, annotator: str, text: str, token: s
 
 def annotate_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
     st.write("annotate_binary(", server, ", ", project, ", ", annotator, ")")
-    url = f"{server}/api/project/{project}/plan/{annotator}/_annotate_binary"
+    url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_binary"
     st.write("annotate_binary(", server, ", ", project, ", ", annotator, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token,
                'Accept': "application/json", "Content-Type": "multipart/form-data" }
