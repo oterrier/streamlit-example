@@ -93,11 +93,11 @@ def visualize(
 
         if show_project or show_annotator:
             col1, col2, = st.columns(2)
-            if show_project:
+            if project is not None and show_project:
                 with col1:
                     project_exp = st.expander("Project definition (json)")
                     project_exp.json(get_project(url, project, st.session_state.token))
-                if show_annotator:
+                if annotator is not None and show_annotator:
                     with col2:
                         annotator_exp = st.expander("Annotator definition (json)")
                         annotator_exp.json(annotator)
