@@ -90,23 +90,24 @@ def visualize(
             if st.session_state.get('annotator', None) is not None:
                 annotator = get_annotator_by_label(url, project, tuple(annotator_types), favorite_only,
                                                    st.session_state.annotator, st.session_state.token)
-    if show_project or show_annotator:
-        col1, col2, = st.columns(2)
-        if show_project:
-            with col1:
-                project_exp = st.expander("Project definition (json)")
-                project_exp.json(get_project(url, project, st.session_state.token))
-            if show_annotator:
-                with col2:
-                    annotator_exp = st.expander("Annotator definition (json)")
-                    annotator_exp.json(annotator)
 
-    st.text_area("Text to analyze", default_text, key="visualize_text")
-    if project is not None and annotator is not None:
-        doc = annotate_with_annotator(url, project, annotator['name'], st.session_state.visualize_text, st.session_state.token)
-        doc_exp = st.expander("Annotated doc (json)")
-        doc_exp.json(doc)
-        visualize_annotated_doc(doc, annotator)
+        if show_project or show_annotator:
+            col1, col2, = st.columns(2)
+            if show_project:
+                with col1:
+                    project_exp = st.expander("Project definition (json)")
+                    project_exp.json(get_project(url, project, st.session_state.token))
+                if show_annotator:
+                    with col2:
+                        annotator_exp = st.expander("Annotator definition (json)")
+                        annotator_exp.json(annotator)
+
+        st.text_area("Text to analyze", default_text, key="visualize_text")
+        if project is not None and annotator is not None:
+            doc = annotate_with_annotator(url, project, annotator['name'], st.session_state.visualize_text, st.session_state.token)
+            doc_exp = st.expander("Annotated doc (json)")
+            doc_exp.json(doc)
+            visualize_annotated_doc(doc, annotator)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
