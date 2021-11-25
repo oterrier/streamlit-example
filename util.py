@@ -163,7 +163,7 @@ def annotate_binary(server: str, project: str, annotator: str, datafile: Uploade
     url = f"{server}/api/project/{project}/plan/{annotator}/_annotate_binary"
     # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token,
-               'Accept': "application/json"}
+               'Accept': "application/json", "Content-Type": "multipart/form-data" }
     multiple_files = [
         ('file', (datafile.name, datafile.getvalue(), datafile.type))
     ]
