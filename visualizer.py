@@ -91,15 +91,16 @@ def visualize(
                 uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
                 if uploaded_file is not None:
                     bytes_data = uploaded_file.getvalue()
-                    doc = annotate_binary(url, project, annotator['name'], uploaded_file,
+                    docs = annotate_binary(url, project, annotator['name'], uploaded_file,
                                               st.session_state.token)
-                pass
+                    doc = docs[0] if docs is not None else None
             else:
                 st.text_area("Text to analyze", default_text, max_chars=10000, key="text_to_analyze")
                 doc = annotate_text(url, project, annotator['name'], st.session_state.text_to_analyze, st.session_state.token)
-            doc_exp = st.expander("Annotated doc (json)")
-            doc_exp.json(doc)
-            visualize_annotated_doc(doc, annotator)
+            if doc is not None:
+                doc_exp = st.expander("Annotated doc (json)")
+                doc_exp.json(doc)
+                visualize_annotated_doc(doc, annotator)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,

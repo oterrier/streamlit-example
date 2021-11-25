@@ -170,9 +170,9 @@ def annotate_binary(server: str, project: str, annotator: str, datafile: Uploade
     }
     r = requests.post(url, files=files, headers=headers, verify=False, timeout=1000)
     if r.ok:
-        doc = r.json()
+        docs = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
-        return doc
+        return docs
     return None
 
 
