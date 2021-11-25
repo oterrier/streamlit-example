@@ -50,8 +50,6 @@ def get_project(server: str, name: str, token: str):
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def get_annotators(server: str, project: str, annotator_types: Tuple[str], favorite_only: bool, token: str):
     st.write("get_annotators(", server, ", ", project, ", ", annotator_types,", ", favorite_only, ")")
-    annotators = get_annotators(server, project, annotator_types, favorite_only, token)
-    st.write("get_annotators(", server, ", ", project, ", ", annotator_types,", ", favorite_only, "): annotators=", str(annotators))
     url = f"{server}/api/projects/{project}/annotators_by_type"
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
     r = requests.get(url, headers=headers, verify=False)
