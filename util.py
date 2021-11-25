@@ -58,6 +58,8 @@ def get_annotators(server: str, project: str, annotator_types: Tuple[str], favor
     annotators = []
     if r.ok:
         json_response = r.json()
+        st.write("get_annotators(", server, ", ", project, ", ", annotator_types, ", ", favorite_only,
+                 "): json_response=", str(json_response))
         for type, annotator in json_response.items():
             st.write("get_annotators(", server, ", ", project, ", ", annotator_types, ", ", favorite_only,
                      "): annotator=", str(annotator))
