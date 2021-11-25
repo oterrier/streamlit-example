@@ -63,7 +63,7 @@ def get_annotators(server: str, project: str, annotator_types: Tuple[str], favor
                      "): annotator=", str(annotator))
             if annotator_types is None or type in annotator_types:
                 if not favorite_only or annotator.get('favorite', False):
-                    annotator['type'] = type
+                    # annotator['type'] = type
                     annotators.append(annotator)
     return annotators
 
