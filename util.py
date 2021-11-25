@@ -3,6 +3,7 @@ import json
 from typing import Tuple
 import requests
 import streamlit as st
+from streamlit.uploaded_file_manager import UploadedFile
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -157,14 +158,15 @@ def annotate_text(server: str, project: str, annotator: str, text: str, token: s
     return None
 
 
-@st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def annotate_binary(server: str, project: str, annotator: str, data, token: str):
+def annotate_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
     # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, ")")
     url = f"{server}/api/project/{project}/plan/{annotator}/_annotate_binary"
     # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), url=", url)
-    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/octet-stream",
+    headers = {'Authorization': 'Bearer ' + token,
                'Accept': "application/json"}
-    r = requests.post(url, data=data, headers=headers, verify=False, timeout=1000)
+    multiple_files = [
+        ('file', (datafile.name, datafile.getvalue(), datafile.type))]
+    r = requests.post('/convert/speech', files=multiple_files, headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))

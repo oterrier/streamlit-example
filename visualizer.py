@@ -6,6 +6,7 @@ from annotated_text import div, annotation
 from collections_extended import RangeMap
 # fmt: off
 from htbuilder import HtmlElement
+from streamlit.uploaded_file_manager import UploadedFile
 
 from util import LOGO, get_token, get_projects, get_annotators, get_project_by_label, get_annotator_by_label, \
     get_project, annotate_text, has_converter, annotate_binary
@@ -87,10 +88,10 @@ def visualize(
 
         if project is not None and annotator is not None:
             if has_converter(annotator):
-                uploaded_file = st.file_uploader("File to analyze", key="file_to_analyze")
+                uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
                 if uploaded_file is not None:
                     bytes_data = uploaded_file.getvalue()
-                    doc = annotate_binary(url, project, annotator['name'], bytes_data,
+                    doc = annotate_binary(url, project, annotator['name'], uploaded_file,
                                               st.session_state.token)
                 pass
             else:
