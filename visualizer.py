@@ -124,8 +124,19 @@ def visualize_annotated_doc(
     if title:
         st.header(title)
     categories = doc.get('categories', [])
-    cats = {c['name']: c.get('score', 1.0) for c in categories}
+    cats = {c['labelName']: c.get('score', 1.0) for c in categories}
     labels = annotator['labels']
+
+    if categories:
+        categorized = []
+        for cat in categories:
+            score = cat.get('score', 1.0)
+            categorized.append((cat['label'], "{:.0%}".format(score), labels[cat['label']['color']]))
+            categorized.append(" ")
+
+        html = annotated_text(*categorized)
+        st.write(html, unsafe_allow_html=True)
+
     annotation_map = RangeMap()
     annotations = doc.get('annotations', [])
     text = doc['text']
