@@ -165,8 +165,9 @@ def annotate_binary(server: str, project: str, annotator: str, datafile: Uploade
     headers = {'Authorization': 'Bearer ' + token,
                'Accept': "application/json"}
     multiple_files = [
-        ('file', (datafile.name, datafile.getvalue(), datafile.type))]
-    r = requests.post('/convert/speech', files=multiple_files, headers=headers, verify=False, timeout=1000)
+        ('file', (datafile.name, datafile.getvalue(), datafile.type))
+    ]
+    r = requests.post(url, files=multiple_files, headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
