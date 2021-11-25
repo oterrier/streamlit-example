@@ -8,7 +8,7 @@ from collections_extended import RangeMap
 from htbuilder import HtmlElement
 
 from util import LOGO, get_token, get_projects, get_annotators, get_project_by_label, get_annotator_by_label, \
-    get_project, annotate_with_annotator
+    get_project, annotate_with_annotator, has_converter, annotate_binary
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 # fmt: on
@@ -85,9 +85,17 @@ def visualize(
                         annotator_exp = st.expander("Annotator definition (json)")
                         annotator_exp.json(annotator)
 
-        st.text_area("Text to analyze", default_text, max_chars=10000, key="visualize_text")
         if project is not None and annotator is not None:
-            doc = annotate_with_annotator(url, project, annotator['name'], st.session_state.visualize_text, st.session_state.token)
+            if has_converter(annotator):
+                uploaded_file = st.file_uploader("File to analyze", key="file_to_analyze")
+                if uploaded_file is not None:
+                    bytes_data = uploaded_file.getvalue()
+                    doc = annotate_binary(url, project, annotator['name'], bytes_data,
+                                              st.session_state.token)
+                pass
+            else:
+                st.text_area("Text to analyze", default_text, max_chars=10000, key="text_to_analyze")
+                doc = annotate_with_annotator(url, project, annotator['name'], st.session_state.text_to_analyze, st.session_state.token)
             doc_exp = st.expander("Annotated doc (json)")
             doc_exp.json(doc)
             visualize_annotated_doc(doc, annotator)

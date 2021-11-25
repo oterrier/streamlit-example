@@ -107,6 +107,16 @@ def get_annotator_by_label(server: str, project: str, annotator_types: Tuple[str
     return None
 
 
+def has_converter(ann):
+    result = 'converter' in ann['parameters'] if ann['type'] == 'plan' else False
+    return result
+
+
+def has_formatter(ann):
+    result = 'formatter' in ann['parameters'] if ann['type'] == 'plan' else False
+    return result
+
+
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def get_plan(server: str, project: str, name: str, token: str):
     url = f"{server}/api/projects/{project}/plans/{name}"
@@ -134,12 +144,27 @@ def get_plan(server: str, project: str, name: str, token: str):
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def annotate_with_annotator(server: str, project: str, annotator: str, text: str, token: str):
+def annotate_text(server: str, project: str, annotator: str, text: str, token: str):
     # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, ")")
     url = f"{server}/api/projects/{project}/annotators/{annotator}/_annotate"
     # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "text/plain", 'Accept': "application/json"}
     r = requests.post(url, data=text.encode(encoding="utf-8"), headers=headers, verify=False, timeout=1000)
+    if r.ok:
+        doc = r.json()
+        # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
+        return doc
+    return None
+
+
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def annotate_binary(server: str, project: str, annotator: str, data, token: str):
+    # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, ")")
+    url = f"{server}/api/project/{project}/plan/{annotator}/_annotate_binary"
+    # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), url=", url)
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/octet-stream",
+               'Accept': "application/json"}
+    r = requests.post(url, data=data, headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
