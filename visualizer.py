@@ -124,14 +124,15 @@ def visualize_annotated_doc(
     if title:
         st.header(title)
     categories = doc.get('categories', [])
-    cats = {c['labelName']: c.get('score', 1.0) for c in categories}
     labels = annotator['labels']
 
     if categories:
         categorized = []
         for cat in categories:
+            st.write("cat=", str(cat))
             score = cat.get('score', 1.0)
-            categorized.append((cat['label'], "{:.0%}".format(score), labels[cat['label']['color']]))
+            color = labels.get(cat['labelName'], {}).get('color', "#333")
+            categorized.append((cat['label'], "{:.0%}".format(score), color))
             categorized.append(" ")
 
         html = annotated_text(*categorized)
@@ -149,7 +150,8 @@ def visualize_annotated_doc(
             if r.start > start:
                 annotated.append(text[start:r.start])
             a = r.value
-            annotated.append((text[r.start:r.stop], a['labelName'], labels[a['label']['color']]))
+            color = labels.get(a['labelName'], {}).get('color', "#333")
+            annotated.append((text[r.start:r.stop], a['labelName'], color))
             start = r.stop
         if start < len(text):
             annotated.append(text[start:])
