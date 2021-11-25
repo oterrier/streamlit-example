@@ -49,19 +49,19 @@ def get_project(server: str, name: str, token: str):
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def get_annotators(server: str, project: str, annotator_types: Tuple[str], favorite_only: bool, token: str):
-    st.write("get_annotators(", server, ", ", project, ", ", annotator_types,", ", favorite_only, ")")
+    # st.write("get_annotators(", server, ", ", project, ", ", annotator_types,", ", favorite_only, ")")
     url = f"{server}/api/projects/{project}/annotators_by_type"
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "application/json", 'Accept': "application/json"}
     r = requests.get(url, headers=headers, verify=False)
     annotators = []
     if r.ok:
         json_response = r.json()
-        st.write("get_annotators(", server, ", ", project, ", ", annotator_types, ", ", favorite_only,
-                 "): json_response=", str(json_response))
+        # st.write("get_annotators(", server, ", ", project, ", ", annotator_types, ", ", favorite_only,
+        #          "): json_response=", str(json_response))
         for type, ann_lst in json_response.items():
             for annotator in ann_lst:
-                st.write("get_annotators(", server, ", ", project, ", ", annotator_types, ", ", favorite_only,
-                         "): annotator=", str(annotator))
+                # st.write("get_annotators(", server, ", ", project, ", ", annotator_types, ", ", favorite_only,
+                #          "): annotator=", str(annotator))
                 if annotator_types is None or type in annotator_types:
                     if not favorite_only or annotator.get('favorite', False):
                         annotator['type'] = type
@@ -77,7 +77,7 @@ def get_labels(server: str, project: str, token: str):
     labels = {}
     if r.ok:
         json_response = r.json()
-        for lab in json_response.items():
+        for lab in json_response:
             labels[lab['name']] = lab
     return labels
 
