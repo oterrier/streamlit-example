@@ -67,14 +67,12 @@ def visualize(
         pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.password, type="password")
         submit_button = st.form_submit_button(label='Connect')
         if submit_button:
-            if 'token' not in st.session_state:
-                st.session_state['token'] = get_token(url_input, name_input, pwd_input)
+            st.session_state['token'] = get_token(url_input, name_input, pwd_input)
 
     annotator = None
     project = None
-    annotator_info = None
     url = url_input[0:-1] if url_input.endswith('/') else url_input
-    if 'token' in st.session_state:
+    if st.session_state.get('token', None) is not None:
         all_projects = get_projects(url, st.session_state.token)
         selected_projects = sorted([p['label'] for p in all_projects if projects is None or p['name'] in projects])
         st.sidebar.selectbox('Select project', selected_projects, key="project")
