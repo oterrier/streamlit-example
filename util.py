@@ -102,7 +102,8 @@ def get_annotator_by_label(server: str, project: str, annotator_types: Tuple[str
                     ann.update(plan)
                     definition = plan['parameters']
                     for step in definition['pipeline']:
-                        if step.get('projectName', None) != ".":
+                        st.write("get_annotator_by_label(", server, ", ", project, ", ", label, "): step=", str(step))
+                        if step.get('projectName', ".") != ".":
                             step_labels = get_labels(server, step['projectName'], token)
                             all_labels.update(step_labels)
             project_labels = get_labels(server, project, token)
