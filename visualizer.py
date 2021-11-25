@@ -101,7 +101,7 @@ def visualize_annotated_doc(
         annotator,
         *,
         show_table: bool = True,
-        title: Optional[str] = "Named Entities",
+        title: Optional[str] = "Annotated Document",
         colors: Dict[str, str] = {},
         key: Optional[str] = None
 ) -> None:
