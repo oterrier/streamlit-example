@@ -17,5 +17,4 @@ visualize(default_text,
           annotator_types=types,
           favorite_only=False,
           sidebar_title="KAIRNTECH Sherpa",
-          sidebar_description="Customizable Sherpa demonstration",
-          show_visualizer_select=False)
+          sidebar_description="Customizable Sherpa demonstration")
