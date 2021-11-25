@@ -12,7 +12,7 @@ from collections_extended import RangeMap
 from htbuilder import HtmlElement
 
 from util import LOGO, get_token, get_projects, get_annotators, get_project_by_label, get_annotator_by_label, \
-    get_project, get_annotator, annotate_with_annotator
+    get_project, annotate_with_annotator
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 
@@ -225,5 +225,5 @@ def annotated_text(*args):
 
     return str(out)
 
-if __name__ == "__main__":
-    plac.call(main)
+# if __name__ == "__main__":
+#     plac.call(main)
