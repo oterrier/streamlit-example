@@ -87,6 +87,7 @@ def visualize(
                         annotator_exp.json(annotator)
 
         if project is not None and annotator is not None:
+            doc = None
             if has_converter(annotator):
                 uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
                 if uploaded_file is not None:
