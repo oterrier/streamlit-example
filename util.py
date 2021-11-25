@@ -1,10 +1,13 @@
 import base64
 import json
 from io import BytesIO
+from pathlib import Path
 from typing import Tuple
+
+import plac
 import requests
 import streamlit as st
-from streamlit.uploaded_file_manager import UploadedFile
+from streamlit.uploaded_file_manager import UploadedFile, UploadedFileRec
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -160,17 +163,12 @@ def annotate_text(server: str, project: str, annotator: str, text: str, token: s
 
 
 def annotate_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
-    st.write("annotate_binary(", server, ", ", project, ", ", annotator, ")")
     url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_binary"
-    st.write("annotate_binary(", server, ", ", project, ", ", annotator, "), url=", url)
-    headers = {'Authorization': 'Bearer ' + token,
-               'Accept': "application/json", "Content-Type": "multipart/form-data" }
-    st.write("annotate_binary(", server, ", ", project, ", ", annotator, "), name=", datafile.name, ", type", datafile.type)
-    bio = BytesIO(datafile.getvalue())
-    multiple_files = [
-        ('file', (datafile.name, bio, datafile.type))
-    ]
-    r = requests.post(url, files=multiple_files, headers=headers, verify=False, timeout=1000)
+    headers = {'Authorization': 'Bearer ' + token}
+    files = {
+        'file': (datafile.name, datafile.getvalue(), datafile.type)
+    }
+    r = requests.post(url, files=files, headers=headers, verify=False, timeout=1000)
     if r.ok:
         doc = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
@@ -213,3 +211,14 @@ LOGO_SVG = """<svg version="1.1" id="Calque_1" xmlns="http://www.w3.org/2000/svg
 </svg>"""
 
 LOGO = get_svg(LOGO_SVG, wrap=False, style="max-width: 100%; margin-bottom: 25px")
+
+# def main():
+#     pdffile = Path("/home/olivier/Téléchargements/3 -  Bail professionnel CG du Val d'oise.pdf")
+#     with pdffile.open("rb") as fin:
+#         datafile = UploadedFile(UploadedFileRec(id=1, name=pdffile.name, type="application/pdf", data=fin.read()))
+#         token = get_token("https://sherpa-sandbox.kairntech.com", "oterrier", "ktote123;")
+#         doc = annotate_binary("https://sherpa-sandbox.kairntech.com", "mazars_officiel_24slash11", "mazars_pdf", datafile, token)
+#         pass
+#
+# if __name__ == "__main__":
+#     plac.call(main)
