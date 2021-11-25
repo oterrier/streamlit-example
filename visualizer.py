@@ -8,7 +8,7 @@ from collections_extended import RangeMap
 from htbuilder import HtmlElement
 
 from util import LOGO, get_token, get_projects, get_annotators, get_project_by_label, get_annotator_by_label, \
-    get_project, annotate_with_annotator, has_converter, annotate_binary
+    get_project, annotate_text, has_converter, annotate_binary
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 # fmt: on
@@ -95,7 +95,7 @@ def visualize(
                 pass
             else:
                 st.text_area("Text to analyze", default_text, max_chars=10000, key="text_to_analyze")
-                doc = annotate_with_annotator(url, project, annotator['name'], st.session_state.text_to_analyze, st.session_state.token)
+                doc = annotate_text(url, project, annotator['name'], st.session_state.text_to_analyze, st.session_state.token)
             doc_exp = st.expander("Annotated doc (json)")
             doc_exp.json(doc)
             visualize_annotated_doc(doc, annotator)
