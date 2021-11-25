@@ -129,7 +129,6 @@ def visualize_annotated_doc(
     if categories:
         categorized = []
         for cat in categories:
-            st.write("cat=", str(cat))
             score = cat.get('score', 1.0)
             color = labels.get(cat['labelName'], {}).get('color', "#333")
             categorized.append((cat['label'], "{:.0%}".format(score), color))
