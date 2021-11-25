@@ -48,8 +48,8 @@ def visualize(
 
     with st.sidebar.form(key='connect_form'):
         url_input = st.text_input(label='Sherpa URL', value="https://sherpa-sandbox.kairntech.com/")
-        name_input = st.text_input(label='Name', value=st.secrets.sherpa_credentials.username)
-        pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.password, type="password")
+        name_input = st.text_input(label='Name', value=st.secrets.sherpa_credentials.get('username', ""))
+        pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.get('password', ""), type="password")
         submit_button = st.form_submit_button(label='Connect')
         if submit_button:
             st.session_state['token'] = get_token(url_input, name_input, pwd_input)
