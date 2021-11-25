@@ -1,8 +1,3 @@
-"""
-Example using the components provided by spacy-streamlit in an existing app.
-Prerequisites:
-python -m spacy download en_core_web_sm
-"""
 import streamlit as st
 from visualizer import visualize
 
@@ -21,6 +16,6 @@ visualize(default_text,
           projects, annotators,
           annotator_types=types,
           favorite_only=False,
-          sidebar_title="Sherpa demo",
+          sidebar_title="KAIRNTECH Sherpa",
           sidebar_description="Customizable Sherpa demonstration",
           show_visualizer_select=False)

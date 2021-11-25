@@ -11,13 +11,8 @@ from util import LOGO, get_token, get_projects, get_annotators, get_project_by_l
     get_project, annotate_with_annotator
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
-
-NER_ATTRS = ["text", "label_", "start", "end", "start_char", "end_char"]
-TOKEN_ATTRS = ["idx", "text", "lemma_", "pos_", "tag_", "dep_", "head", "morph",
-               "ent_type_", "ent_iob_", "shape_", "is_alpha", "is_ascii",
-               "is_digit", "is_punct", "like_num", "is_sent_start"]
 # fmt: on
-FOOTER = """<span style="font-size: 0.75em">&hearts; Built with [`spacy-streamlit`](https://github.com/explosion/spacy-streamlit)</span>"""
+FOOTER = """<span style="font-size: 0.75em">&hearts; Built with [Streamlit](https://streamlit.io/) and largerly inspired by the great [`spacy-streamlit`](https://github.com/explosion/spacy-streamlit)</span>"""
 
 
 def visualize(
@@ -25,15 +20,9 @@ def visualize(
         projects: List[str] = None,
         annotators: List[str] = None,
         annotator_types: List[str] = None,
-        visualizers: List[str] = [],
         favorite_only: bool = False,
-        ner_labels: Optional[List[str]] = None,
-        ner_attrs: List[str] = NER_ATTRS,
-        similarity_texts: Tuple[str, str] = ("apple", "orange"),
-        token_attrs: List[str] = TOKEN_ATTRS,
         show_project: bool = True,
         show_annotator: bool = True,
-        show_visualizer_select: bool = False,
         sidebar_title: Optional[str] = None,
         sidebar_description: Optional[str] = None,
         show_logo: bool = True,
@@ -96,7 +85,7 @@ def visualize(
                         annotator_exp = st.expander("Annotator definition (json)")
                         annotator_exp.json(annotator)
 
-        st.text_area("Text to analyze", default_text, key="visualize_text")
+        st.text_area("Text to analyze", default_text, max_chars=10000, key="visualize_text")
         if project is not None and annotator is not None:
             doc = annotate_with_annotator(url, project, annotator['name'], st.session_state.visualize_text, st.session_state.token)
             doc_exp = st.expander("Annotated doc (json)")

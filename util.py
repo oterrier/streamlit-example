@@ -1,7 +1,6 @@
 import base64
 import json
-from typing import List, Tuple
-
+from typing import Tuple
 import requests
 import streamlit as st
 
