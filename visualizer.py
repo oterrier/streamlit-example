@@ -1,10 +1,6 @@
 import html
-import json
-from pathlib import Path
 from typing import List, Tuple, Optional, Dict
 
-import pandas as pd
-import plac
 import streamlit as st
 from annotated_text import div, annotation
 from collections_extended import RangeMap
@@ -156,29 +152,20 @@ def visualize_annotated_doc(
             annotated.append(text[start:])
     else:
         annotated = [text]
-    if not labels:
-        st.warning("The parameter 'labels' should not be empty or None.")
-    else:
-        # exp = st.expander("Select annotation labels")
-        # label_select = exp.multiselect(
-        #     "Entity labels",
-        #     options=labels.values(),
-        #     default=list(labels.values()),
-        #     key=f"{key}_ner_label_select",
-        # )
-        html = annotated_text(*annotated)
-        html = html.replace("\n\n", "\n")
-        st.write(html, unsafe_allow_html=True)
-        #
-        # if show_table:
-        #     data = [
-        #         [str(getattr(ent, attr)) for attr in attrs]
-        #         for ent in doc.ents
-        #         if ent.label_ in label_select
-        #     ]
-        #     if data:
-        #         df = pd.DataFrame(data, columns=attrs)
-        #         st.dataframe(df)
+
+    html = annotated_text(*annotated)
+    html = html.replace("\n\n", "\n")
+    st.write(html, unsafe_allow_html=True)
+    #
+    # if show_table:
+    #     data = [
+    #         [str(getattr(ent, attr)) for attr in attrs]
+    #         for ent in doc.ents
+    #         if ent.label_ in label_select
+    #     ]
+    #     if data:
+    #         df = pd.DataFrame(data, columns=attrs)
+    #         st.dataframe(df)
 
 
 def annotated_text(*args):
