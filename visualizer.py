@@ -56,7 +56,10 @@ def visualize(
                                   type="password")
         submit_button = st.form_submit_button(label='Connect')
         if submit_button:
-            st.session_state['token'] = get_token(url_input, name_input, pwd_input)
+            try:
+                st.session_state['token'] = get_token(url_input, name_input, pwd_input)
+            except BaseException as e:
+                st.exception(e)
 
     annotator = None
     project = None

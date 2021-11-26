@@ -15,15 +15,18 @@ from streamlit.uploaded_file_manager import UploadedFile, UploadedFileRec
 def get_token(server: str, user: str, password: str):
     url = f"{server}/api/auth/login"
     auth = {"email": user, "password": password}
-    response = requests.post(url, json=auth,
+    r = requests.post(url, json=auth,
                              headers={'Content-Type': "application/json", 'Accept': "application/json"},
                              verify=False)
-    json_response = json.loads(response.text)
-    if 'access_token' in json_response:
-        token = json_response['access_token']
-        return token
+    if r.ok:
+        json_response = r.json()
+        if 'access_token' in json_response:
+            token = json_response['access_token']
+            return token
+        else:
+            return
     else:
-        return
+        raise RuntimeError(f"Connection error for user {user}")
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
