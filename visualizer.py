@@ -98,7 +98,8 @@ def visualize(
                     if uploaded_file.type.startswith('audio'):
                         st.audio(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
                     elif uploaded_file.type.startswith('video'):
-                        st.video(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
+                        st.audio(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
+                        # st.video(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
                     if has_formatter(annotator):
                         result = annotate_format_binary(url, project, annotator['name'], uploaded_file,
                                                         st.session_state.token)
