@@ -1,5 +1,5 @@
 import html
-from typing import List, Tuple, Optional, Dict
+from typing import List, Optional
 
 import streamlit as st
 from annotated_text import div, annotation
@@ -7,6 +7,7 @@ from collections_extended import RangeMap
 # fmt: off
 from htbuilder import HtmlElement
 from streamlit.uploaded_file_manager import UploadedFile
+import pandas as pd
 
 from util import LOGO, get_token, get_projects, get_annotators, get_project_by_label, get_annotator_by_label, \
     get_project, annotate_text, has_converter, annotate_binary, has_formatter, annotate_format_text, \
@@ -90,22 +91,22 @@ def visualize(
 
         if project is not None and annotator is not None:
             doc = None
+            result: UploadedFile = None
             if has_converter(annotator):
                 uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
                 if uploaded_file is not None:
                     if has_formatter(annotator):
-                        docs = annotate_format_binary(url, project, annotator['name'], uploaded_file,
-                                           st.session_state.token)
-                        doc = docs[0] if docs is not None else None
+                        result = annotate_format_binary(url, project, annotator['name'], uploaded_file,
+                                                        st.session_state.token)
                     else:
                         docs = annotate_binary(url, project, annotator['name'], uploaded_file,
-                                           st.session_state.token)
+                                               st.session_state.token)
                         doc = docs[0] if docs is not None else None
             else:
                 st.text_area("Text to analyze", default_text, max_chars=10000, key="text_to_analyze")
                 if has_formatter(annotator):
-                    file = annotate_format_text(url, project, annotator['name'], st.session_state.text_to_analyze,
-                                        st.session_state.token)
+                    result = annotate_format_text(url, project, annotator['name'], st.session_state.text_to_analyze,
+                                                  st.session_state.token)
                 else:
                     doc = annotate_text(url, project, annotator['name'], st.session_state.text_to_analyze,
                                         st.session_state.token)
@@ -113,19 +114,38 @@ def visualize(
                 doc_exp = st.expander("Annotated doc (json)")
                 doc_exp.json(doc)
                 visualize_annotated_doc(doc, annotator)
+            if result is not None:
+                st.download_button(
+                    label="Download result",
+                    data=result.getvalue(),
+                    file_name=result.name,
+                    mime=result.type)
+                if result.type in ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
+                    visualize_table(result, annotator)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
     )
 
 
+def visualize_table(result, annotator,
+                    *,
+                    title: Optional[str] = "Table",
+                    key: Optional[str] = None
+                    ):
+    if title:
+        st.header(title)
+    if result.type == 'text/csv':
+        df = pd.read_csv(result.getvalue())
+    elif result.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        df = pd.read_excel(result.getvalue())
+    st.dataframe(data=df)
+
 def visualize_annotated_doc(
         doc,
         annotator,
         *,
-        show_table: bool = True,
         title: Optional[str] = "Annotated Document",
-        colors: Dict[str, str] = {},
         key: Optional[str] = None
 ) -> None:
     """Visualizer for named entities."""
