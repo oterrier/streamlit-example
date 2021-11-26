@@ -36,7 +36,8 @@ def get_projects(server: str, token: str):
     r = requests.get(url, headers=headers, verify=False)
     if r.ok:
         return r.json()
-    return None
+    else:
+        raise r.raise_for_status()
 
 
 def get_project_by_label(server: str, label: str, token: str):
@@ -74,6 +75,8 @@ def get_annotators(server: str, project: str, annotator_types: Tuple[str], favor
                     if not favorite_only or annotator.get('favorite', False):
                         annotator['type'] = type
                         annotators.append(annotator)
+    else:
+        raise r.raise_for_status()
     return annotators
 
 
@@ -134,23 +137,8 @@ def get_plan(server: str, project: str, name: str, token: str):
     r = requests.get(url, headers=headers, verify=False)
     if r.ok:
         return r.json()
-    return None
-    # st.write("get_annotator(", server, ", ", project, ", ", name, ")")
-    annotators = get_annotators(server, project, token)
-    # st.write("get_annotator_by_label(", server, ", ", project, ", ", name, "): annotators=", str(annotators))
-    for p in annotators:
-        # st.write("get_annotator_by_label(", server, ", ", project, ", ", name, "): p=", str(p))
-        if p['name'] == name:
-            annotator = p['parameters']
-            for annotator in annotator['pipeline']:
-                if annotator.get('projectName', None) == ".":
-                    annotator['projectName'] = project
-                # annotator.pop('uuid', None)
-            # if 'formatter' in annotator:
-            #     annotator['formatter'].pop('uuid', None)
-            #     # del annotator['formatter']
-            return annotator
-    return None
+    else:
+        raise r.raise_for_status()
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -164,7 +152,8 @@ def annotate_text(server: str, project: str, annotator: str, text: str, token: s
         doc = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
         return doc
-    return None
+    else:
+        raise r.raise_for_status()
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -183,7 +172,8 @@ def annotate_format_text(server: str, project: str, annotator: str, text: str, t
             if b'filename' in content_parameters:
                 filename = content_parameters[b'filename'].decode("utf-8")
         return UploadedFile(UploadedFileRec(id=0, name=filename, type=type, data=data))
-    return None
+    else:
+        raise r.raise_for_status()
 
 
 def annotate_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
@@ -197,7 +187,8 @@ def annotate_binary(server: str, project: str, annotator: str, datafile: Uploade
         docs = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
         return docs
-    return None
+    else:
+        raise r.raise_for_status()
 
 
 def annotate_format_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
@@ -216,7 +207,8 @@ def annotate_format_binary(server: str, project: str, annotator: str, datafile: 
             if b'filename' in content_parameters:
                 filename = content_parameters[b'filename'].decode("utf-8")
         return UploadedFile(UploadedFileRec(id=0, name=filename, type=type, data=data))
-    return None
+    else:
+        raise r.raise_for_status()
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)

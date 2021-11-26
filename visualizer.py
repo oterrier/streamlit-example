@@ -64,72 +64,75 @@ def visualize(
     annotator = None
     project = None
     url = url_input[0:-1] if url_input.endswith('/') else url_input
-    if st.session_state.get('token', None) is not None:
-        all_projects = get_projects(url, st.session_state.token)
-        selected_projects = sorted([p['label'] for p in all_projects if projects is None or p['name'] in projects])
-        st.sidebar.selectbox('Select project', selected_projects, key="project")
-        if st.session_state.get('project', None) is not None:
-            project = get_project_by_label(url, st.session_state.project, st.session_state.token)
-            all_annotators = get_annotators(url,
-                                            project,
-                                            tuple(annotator_types), favorite_only,
-                                            st.session_state.token) if project is not None else []
-            selected_annotators = sorted(
-                [p['label'] for p in all_annotators if annotators is None or p['name'] in annotators])
-            st.sidebar.selectbox('Select annotator', selected_annotators, key="annotator")
-            if st.session_state.get('annotator', None) is not None:
-                annotator = get_annotator_by_label(url, project, tuple(annotator_types), favorite_only,
-                                                   st.session_state.annotator, st.session_state.token)
+    try:
+        if st.session_state.get('token', None) is not None:
+            all_projects = get_projects(url, st.session_state.token)
+            selected_projects = sorted([p['label'] for p in all_projects if projects is None or p['name'] in projects])
+            st.sidebar.selectbox('Select project', selected_projects, key="project")
+            if st.session_state.get('project', None) is not None:
+                project = get_project_by_label(url, st.session_state.project, st.session_state.token)
+                all_annotators = get_annotators(url,
+                                                project,
+                                                tuple(annotator_types), favorite_only,
+                                                st.session_state.token) if project is not None else []
+                selected_annotators = sorted(
+                    [p['label'] for p in all_annotators if annotators is None or p['name'] in annotators])
+                st.sidebar.selectbox('Select annotator', selected_annotators, key="annotator")
+                if st.session_state.get('annotator', None) is not None:
+                    annotator = get_annotator_by_label(url, project, tuple(annotator_types), favorite_only,
+                                                       st.session_state.annotator, st.session_state.token)
 
-        if show_project or show_annotator:
-            col1, col2, = st.columns(2)
-            if project is not None and show_project:
-                with col1:
-                    project_exp = st.expander("Project definition (json)")
-                    project_exp.json(get_project(url, project, st.session_state.token))
-                if annotator is not None and show_annotator:
-                    with col2:
-                        annotator_exp = st.expander("Annotator definition (json)")
-                        annotator_exp.json(annotator)
+            if show_project or show_annotator:
+                col1, col2, = st.columns(2)
+                if project is not None and show_project:
+                    with col1:
+                        project_exp = st.expander("Project definition (json)")
+                        project_exp.json(get_project(url, project, st.session_state.token))
+                    if annotator is not None and show_annotator:
+                        with col2:
+                            annotator_exp = st.expander("Annotator definition (json)")
+                            annotator_exp.json(annotator)
 
-        if project is not None and annotator is not None:
-            doc = None
-            result: UploadedFile = None
-            if has_converter(annotator):
-                uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
-                if uploaded_file is not None:
-                    if uploaded_file.type.startswith('audio'):
-                        st.audio(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
-                    elif uploaded_file.type.startswith('video'):
-                        st.audio(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
-                        # st.video(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
-                    if has_formatter(annotator):
-                        result = annotate_format_binary(url, project, annotator['name'], uploaded_file,
-                                                        st.session_state.token)
-                    else:
-                        docs = annotate_binary(url, project, annotator['name'], uploaded_file,
-                                               st.session_state.token)
-                        doc = docs[0] if docs is not None else None
-            else:
-                st.text_area("Text to analyze", default_text, max_chars=10000, key="text_to_analyze")
-                if has_formatter(annotator):
-                    result = annotate_format_text(url, project, annotator['name'], st.session_state.text_to_analyze,
-                                                  st.session_state.token)
+            if project is not None and annotator is not None:
+                doc = None
+                result: UploadedFile = None
+                if has_converter(annotator):
+                    uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
+                    if uploaded_file is not None:
+                        if uploaded_file.type.startswith('audio'):
+                            st.audio(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
+                        elif uploaded_file.type.startswith('video'):
+                            st.audio(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
+                            # st.video(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
+                        if has_formatter(annotator):
+                            result = annotate_format_binary(url, project, annotator['name'], uploaded_file,
+                                                            st.session_state.token)
+                        else:
+                            docs = annotate_binary(url, project, annotator['name'], uploaded_file,
+                                                   st.session_state.token)
+                            doc = docs[0] if docs is not None else None
                 else:
-                    doc = annotate_text(url, project, annotator['name'], st.session_state.text_to_analyze,
-                                        st.session_state.token)
-            if doc is not None:
-                doc_exp = st.expander("Annotated doc (json)")
-                doc_exp.json(doc)
-                visualize_annotated_doc(doc, annotator)
-            if result is not None:
-                st.download_button(
-                    label="Download result",
-                    data=result.getvalue(),
-                    file_name=result.name,
-                    mime=result.type)
-                if result.type in ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
-                    visualize_table(result, annotator)
+                    st.text_area("Text to analyze", default_text, max_chars=10000, key="text_to_analyze")
+                    if has_formatter(annotator):
+                        result = annotate_format_text(url, project, annotator['name'], st.session_state.text_to_analyze,
+                                                      st.session_state.token)
+                    else:
+                        doc = annotate_text(url, project, annotator['name'], st.session_state.text_to_analyze,
+                                            st.session_state.token)
+                if doc is not None:
+                    doc_exp = st.expander("Annotated doc (json)")
+                    doc_exp.json(doc)
+                    visualize_annotated_doc(doc, annotator)
+                if result is not None:
+                    st.download_button(
+                        label="Download result",
+                        data=result.getvalue(),
+                        file_name=result.name,
+                        mime=result.type)
+                    if result.type in ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
+                        visualize_table(result, annotator)
+    except BaseException as e:
+        st.exception(e)
     st.sidebar.markdown(
         FOOTER,
         unsafe_allow_html=True,
