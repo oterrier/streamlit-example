@@ -95,6 +95,7 @@ def visualize(
             if has_converter(annotator):
                 uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
                 if uploaded_file is not None:
+                    st.write(uploaded_file.name, " ", uploaded_file.type)
                     if has_formatter(annotator):
                         result = annotate_format_binary(url, project, annotator['name'], uploaded_file,
                                                         st.session_state.token)

@@ -103,7 +103,7 @@ def get_annotator_by_label(server: str, project: str, annotator_types: Tuple[str
                     ann.update(plan)
                     definition = plan['parameters']
                     for step in definition['pipeline']:
-                        st.write("get_annotator_by_label(", server, ", ", project, ", ", label, "): step=", str(step))
+                        # st.write("get_annotator_by_label(", server, ", ", project, ", ", label, "): step=", str(step))
                         if step.get('projectName', project) != project:
                             step_labels = get_labels(server, step['projectName'], token)
                             all_labels.update(step_labels)
@@ -276,6 +276,11 @@ Ci-aprés conjointement dénommées Mes Parties
     #     doc = annotate_binary("https://sherpa-sandbox.kairntech.com", "mazars_officiel_24slash11", "mazars_pdf", datafile, token)
     #     pass
 
-
+    wavfile = Path("/home/olivier/Téléchargements/ae26ccf4-ea2b-4bc7-b112-9bdb00931577.webm")
+    with wavfile.open("rb") as fin:
+        datafile = UploadedFile(UploadedFileRec(id=1, name=wavfile.name, type="video/webm", data=fin.read()))
+        token = get_token("https://sherpa-sandbox.kairntech.com", "oterrier", "ktote123;")
+        doc = annotate_binary("https://sherpa-sandbox.kairntech.com", "terrorisme_ner_v2", "audio", datafile, token)
+        pass
 if __name__ == "__main__":
     plac.call(main)
