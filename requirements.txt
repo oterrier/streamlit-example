@@ -1,4 +1,4 @@
-pandas==1.2.3,
+pandas==1.2.3
 openpyxl==3.0.7
 streamlit~=1.2.0
 st-annotated-text
