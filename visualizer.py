@@ -95,7 +95,10 @@ def visualize(
             if has_converter(annotator):
                 uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
                 if uploaded_file is not None:
-                    st.write(uploaded_file.name, " ", uploaded_file.type)
+                    if uploaded_file.type.startswith('audio'):
+                        st.audio(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
+                    elif uploaded_file.type.startswith('video'):
+                        st.video(uploaded_file.getvalue(), format=uploaded_file.type, start_time=0)
                     if has_formatter(annotator):
                         result = annotate_format_binary(url, project, annotator['name'], uploaded_file,
                                                         st.session_state.token)
