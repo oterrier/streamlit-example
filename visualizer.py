@@ -49,17 +49,17 @@ def visualize(
         st.sidebar.markdown(sidebar_description)
     # Forms can be declared using the 'with' syntax
 
-    with st.sidebar.form(key='connect_form'):
-        url_input = st.text_input(label='Sherpa URL', value="https://sherpa-sandbox.kairntech.com/")
-        name_input = st.text_input(label='Name', value=st.secrets.sherpa_credentials.get('username', ""))
-        pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.get('password', ""),
-                                  type="password")
-        submit_button = st.form_submit_button(label='Connect')
-        if submit_button:
-            try:
+    try:
+        with st.sidebar.form(key='connect_form'):
+            url_input = st.text_input(label='Sherpa URL', value="https://sherpa-sandbox.kairntech.com/")
+            name_input = st.text_input(label='Name', value=st.secrets.sherpa_credentials.get('username', ""))
+            pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.get('password', ""),
+                                      type="password")
+            submit_button = st.form_submit_button(label='Connect')
+            if submit_button:
                 st.session_state['token'] = get_token(url_input, name_input, pwd_input)
-            except BaseException as e:
-                st.exception(e)
+    except BaseException as e:
+        st.exception(e)
 
     annotator = None
     project = None
