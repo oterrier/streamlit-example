@@ -26,7 +26,7 @@ def get_token(server: str, user: str, password: str):
         else:
             return
     else:
-        raise RuntimeError(f"Connection error for user {user}")
+        raise r.raise_for_status()
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
