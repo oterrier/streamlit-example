@@ -15,7 +15,7 @@ from streamlit.uploaded_file_manager import UploadedFile, UploadedFileRec
 def get_token(server: str, user: str, password: str):
     url = f"{server}/api/auth/login"
     auth = {"email": user, "password": password}
-    r = requests.post(url, json=auth,
+    r = requests.post(url, json=auth, params={'loginOnly':True},
                              headers={'Content-Type': "application/json", 'Accept': "application/json"},
                              verify=False)
     if r.ok:
