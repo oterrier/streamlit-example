@@ -167,7 +167,7 @@ def annotate_text(server: str, project: str, annotator: str, text: str, token: s
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def annotate_format_text(server: str, project: str, annotator: str, text: str, token: str):
     # st.write("annotate_format_text(", server, ", ", project, ", ", annotator, ")")
-    url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_format_text"
+    url = f"{server}/api/projects/{project}/plans/{annotator}/_annotate_format_text"
     # st.write("annotate_format_text(", server, ", ", project, ", ", annotator, "), url=", url)
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "text/plain", 'Accept': "application/octet-stream"}
     r = requests.post(url, data=text.encode(encoding="utf-8"), headers=headers, verify=False, timeout=1000)
@@ -184,7 +184,7 @@ def annotate_format_text(server: str, project: str, annotator: str, text: str, t
 
 
 def annotate_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
-    url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_binary"
+    url = f"{server}/api/projects/{project}/plans/{annotator}/_annotate_binary"
     headers = {'Authorization': 'Bearer ' + token}
     files = {
         'file': (datafile.name, datafile.getvalue(), datafile.type)
@@ -198,7 +198,7 @@ def annotate_binary(server: str, project: str, annotator: str, datafile: Uploade
 
 
 def annotate_format_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
-    url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_format_binary"
+    url = f"{server}/api/projects/{project}/plans/{annotator}/_annotate_format_binary"
     headers = {'Authorization': 'Bearer ' + token}
     files = {
         'file': (datafile.name, datafile.getvalue(), datafile.type)
