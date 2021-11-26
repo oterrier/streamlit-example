@@ -11,7 +11,7 @@ from multipart.multipart import parse_options_header
 from streamlit.uploaded_file_manager import UploadedFile, UploadedFileRec
 
 
-@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+# @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def get_token(server: str, user: str, password: str):
     url = f"{server}/api/auth/login"
     auth = {"email": user, "password": password}
