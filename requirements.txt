@@ -4,3 +4,4 @@ st-annotated-text
 requests~=2.25.1
 plac==0.9.6
 collections-extended>=1.0.2
+python-multipart

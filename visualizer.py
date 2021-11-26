@@ -9,7 +9,8 @@ from htbuilder import HtmlElement
 from streamlit.uploaded_file_manager import UploadedFile
 
 from util import LOGO, get_token, get_projects, get_annotators, get_project_by_label, get_annotator_by_label, \
-    get_project, annotate_text, has_converter, annotate_binary
+    get_project, annotate_text, has_converter, annotate_binary, has_formatter, annotate_format_text, \
+    annotate_format_binary
 
 # from .util import load_model, process_text, get_svg, get_html, LOGO
 # fmt: on
@@ -50,7 +51,8 @@ def visualize(
     with st.sidebar.form(key='connect_form'):
         url_input = st.text_input(label='Sherpa URL', value="https://sherpa-sandbox.kairntech.com/")
         name_input = st.text_input(label='Name', value=st.secrets.sherpa_credentials.get('username', ""))
-        pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.get('password', ""), type="password")
+        pwd_input = st.text_input(label='Password', value=st.secrets.sherpa_credentials.get('password', ""),
+                                  type="password")
         submit_button = st.form_submit_button(label='Connect')
         if submit_button:
             st.session_state['token'] = get_token(url_input, name_input, pwd_input)
@@ -91,13 +93,22 @@ def visualize(
             if has_converter(annotator):
                 uploaded_file: UploadedFile = st.file_uploader("File to analyze", key="file_to_analyze")
                 if uploaded_file is not None:
-                    bytes_data = uploaded_file.getvalue()
-                    docs = annotate_binary(url, project, annotator['name'], uploaded_file,
-                                              st.session_state.token)
-                    doc = docs[0] if docs is not None else None
+                    if has_formatter(annotator):
+                        docs = annotate_format_binary(url, project, annotator['name'], uploaded_file,
+                                           st.session_state.token)
+                        doc = docs[0] if docs is not None else None
+                    else:
+                        docs = annotate_binary(url, project, annotator['name'], uploaded_file,
+                                           st.session_state.token)
+                        doc = docs[0] if docs is not None else None
             else:
                 st.text_area("Text to analyze", default_text, max_chars=10000, key="text_to_analyze")
-                doc = annotate_text(url, project, annotator['name'], st.session_state.text_to_analyze, st.session_state.token)
+                if has_formatter(annotator):
+                    file = annotate_format_text(url, project, annotator['name'], st.session_state.text_to_analyze,
+                                        st.session_state.token)
+                else:
+                    doc = annotate_text(url, project, annotator['name'], st.session_state.text_to_analyze,
+                                        st.session_state.token)
             if doc is not None:
                 doc_exp = st.expander("Annotated doc (json)")
                 doc_exp.json(doc)
@@ -106,6 +117,7 @@ def visualize(
         FOOTER,
         unsafe_allow_html=True,
     )
+
 
 def visualize_annotated_doc(
         doc,
@@ -206,7 +218,8 @@ def annotated_text(*args):
     ... )
 
     """
-    out = div(style="white-space: pre-wrap; overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 0.25rem; padding: 1rem; margin-bottom: 2.5rem")
+    out = div(
+        style="white-space: pre-wrap; overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 0.25rem; padding: 1rem; margin-bottom: 2.5rem")
 
     for arg in args:
         if isinstance(arg, str):

@@ -7,6 +7,7 @@ from typing import Tuple
 import plac
 import requests
 import streamlit as st
+from multipart.multipart import parse_options_header
 from streamlit.uploaded_file_manager import UploadedFile, UploadedFileRec
 
 
@@ -103,7 +104,7 @@ def get_annotator_by_label(server: str, project: str, annotator_types: Tuple[str
                     definition = plan['parameters']
                     for step in definition['pipeline']:
                         st.write("get_annotator_by_label(", server, ", ", project, ", ", label, "): step=", str(step))
-                        if step.get('projectName', ".") != ".":
+                        if step.get('projectName', project) != project:
                             step_labels = get_labels(server, step['projectName'], token)
                             all_labels.update(step_labels)
             project_labels = get_labels(server, project, token)
@@ -163,6 +164,25 @@ def annotate_text(server: str, project: str, annotator: str, text: str, token: s
     return None
 
 
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def annotate_format_text(server: str, project: str, annotator: str, text: str, token: str):
+    # st.write("annotate_format_text(", server, ", ", project, ", ", annotator, ")")
+    url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_format_text"
+    # st.write("annotate_format_text(", server, ", ", project, ", ", annotator, "), url=", url)
+    headers = {'Authorization': 'Bearer ' + token, 'Content-Type': "text/plain", 'Accept': "application/octet-stream"}
+    r = requests.post(url, data=text.encode(encoding="utf-8"), headers=headers, verify=False, timeout=1000)
+    if r.ok:
+        data = r.content
+        type = r.headers.get('Content-Type', 'application/octet-stream')
+        filename = "file"
+        if 'Content-Disposition' in r.headers:
+            content_type, content_parameters = parse_options_header(r.headers['Content-Disposition'])
+            if b'filename' in content_parameters:
+                filename = content_parameters[b'filename'].decode("utf-8")
+        return UploadedFile(UploadedFileRec(id=0, name=filename, type=type, data=data))
+    return None
+
+
 def annotate_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
     url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_binary"
     headers = {'Authorization': 'Bearer ' + token}
@@ -174,6 +194,25 @@ def annotate_binary(server: str, project: str, annotator: str, datafile: Uploade
         docs = r.json()
         # st.write("annotate_with_annotator(", server, ", ", project, ", ", annotator, "), doc=", str(doc))
         return docs
+    return None
+
+
+def annotate_format_binary(server: str, project: str, annotator: str, datafile: UploadedFile, token: str):
+    url = f"{server}/api/project/{project}/plans/{annotator}/_annotate_format_binary"
+    headers = {'Authorization': 'Bearer ' + token}
+    files = {
+        'file': (datafile.name, datafile.getvalue(), datafile.type)
+    }
+    r = requests.post(url, files=files, headers=headers, verify=False, timeout=1000)
+    if r.ok:
+        data = r.content
+        type = r.headers.get('Content-Type', 'application/octet-stream')
+        filename = "file"
+        if 'Content-Disposition' in r.headers:
+            content_type, content_parameters = parse_options_header(r.headers['Content-Disposition'])
+            if b'filename' in content_parameters:
+                filename = content_parameters[b'filename'].decode("utf-8")
+        return UploadedFile(UploadedFileRec(id=0, name=filename, type=type, data=data))
     return None
 
 
@@ -213,13 +252,30 @@ LOGO_SVG = """<svg version="1.1" id="Calque_1" xmlns="http://www.w3.org/2000/svg
 
 LOGO = get_svg(LOGO_SVG, wrap=False, style="max-width: 100%; margin-bottom: 25px")
 
-# def main():
-#     pdffile = Path("/home/olivier/Téléchargements/3 -  Bail professionnel CG du Val d'oise.pdf")
-#     with pdffile.open("rb") as fin:
-#         datafile = UploadedFile(UploadedFileRec(id=1, name=pdffile.name, type="application/pdf", data=fin.read()))
-#         token = get_token("https://sherpa-sandbox.kairntech.com", "oterrier", "ktote123;")
-#         doc = annotate_binary("https://sherpa-sandbox.kairntech.com", "mazars_officiel_24slash11", "mazars_pdf", datafile, token)
-#         pass
-#
-# if __name__ == "__main__":
-#     plac.call(main)
+
+def main():
+    text = """ENTRE LES SOUSSIGNEES : 
+ELYSEES PIERRE, société civile de placement immobilier à.capital variable dont le siège: social est à Paris 8™e, 103. avenue des Champs Elysêes., immatriculée au RCS" Paris sous le n° 334.850.575 représentée par la société HSBC REIM (France), société anonyme â directoire et conseil de surveillance, au capital de 230 000 eurps, en qualité de société de gestion, dont le siège social est à Paris 8éme, 15 rue Vernet, immatriculée au RCS Paris sous le n” 722.028.206 elle-même représentée par Madame Patricia DUPONT LIEVENS, directeur générai, ou Monsieur Jérôme COUTON, directeur général adjoint, dûment habilités à l'effet. des présentes ; 
+Ci-après, dénommée !< ïe Bailleur » 
+D’UNE PART 
+ET : 
+La COMMUNE DE CRETEIL, représentée par son maire, M. Laurent CATHALA, agissant, conformément aux dispositions de l’article L.2122-22 du codé général des collectivités territoriales et de la délibération D2017-1-6-0.01 du 6 mars 2017 prise pour son application ; 
+Ci-après dénommée « le Preneur 
+D’AUTRE PART 
+Ci-aprés conjointement dénommées Mes Parties 
+    """
+    token = get_token("https://sherpa-sandbox.kairntech.com", "oterrier", "ktote123;")
+    doc = annotate_format_text("https://sherpa-sandbox.kairntech.com", "mazars_officiel_24slash11", "mazars_pdf_excel",
+                               text,
+                               token)
+
+    # pdffile = Path("/home/olivier/Téléchargements/3 -  Bail professionnel CG du Val d'oise.pdf")
+    # with pdffile.open("rb") as fin:
+    #     datafile = UploadedFile(UploadedFileRec(id=1, name=pdffile.name, type="application/pdf", data=fin.read()))
+    #     token = get_token("https://sherpa-sandbox.kairntech.com", "oterrier", "ktote123;")
+    #     doc = annotate_binary("https://sherpa-sandbox.kairntech.com", "mazars_officiel_24slash11", "mazars_pdf", datafile, token)
+    #     pass
+
+
+if __name__ == "__main__":
+    plac.call(main)
