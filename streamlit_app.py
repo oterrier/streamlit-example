@@ -1,5 +1,5 @@
 import streamlit as st
-from visualizer import visualize
+from sherpa_streamlit import visualize
 
 default_text = """Un retour suite à votre accueil me semble évident.
 Je suis un fidèle depuis des années.
@@ -10,10 +10,8 @@ Très cordialement,
 # Reads
 projects = None
 annotators = None
-types = ["learner", "plan", "gazetteer"]
 visualize(default_text,
           projects, annotators,
-          annotator_types=types,
           favorite_only=False,
           sidebar_title="KAIRNTECH Sherpa",
           sidebar_description="Customizable Sherpa demonstration")
