@@ -10,8 +10,11 @@ Très cordialement,
 # Reads
 projects = None
 annotators = None
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 visualize(default_text,
-          projects, annotators,
           favorite_only=False,
           sidebar_title="KAIRNTECH Sherpa",
           sidebar_description="Customizable Sherpa demonstration")
