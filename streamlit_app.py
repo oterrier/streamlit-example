@@ -11,6 +11,7 @@ Très cordialement,
 projects = None
 annotators = None
 st.set_page_config(
+    page_title="Blabla",
     layout="wide",
     initial_sidebar_state="expanded"
 )
